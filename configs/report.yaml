@@ -1,0 +1,3 @@
+results_root: outputs/arcface_identity
+output_root: outputs/reports/arcface_identity
+compress_images: true

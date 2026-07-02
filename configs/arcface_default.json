@@ -1,0 +1,11 @@
+{
+  "architecture": "iresnet100",
+  "input_size": 112,
+  "input_mode": "full_image_resize",
+  "image_normalization": "minus_one_to_one",
+  "channel_order": "rgb",
+  "embedding_normalization": "l2",
+  "checkpoint_path": "models/arcface/iresnet100.pth",
+  "objective": "cosine_distance",
+  "loss": "-Z"
+}

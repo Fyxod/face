@@ -1,0 +1,9 @@
+faces:
+  - face_002
+  - face_005
+prompts:
+  - add black sunglasses
+  - add headphones
+notes:
+  - ArcFace Z is not prompt-conditioned.
+  - Prompts are used only for downstream InstructPix2Pix edit evaluation.
