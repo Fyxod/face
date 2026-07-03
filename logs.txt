@@ -1,0 +1,150 @@
+$ bash
+interns@workstation003:~/Desktop/face$ cd /home/interns/Desktop/face
+mkdir -p models/arcface
+
+$HOME/.local/bin/micromamba run \
+  -p /home/interns/Desktop/mat/.micromamba/envs/mat-a6000 \
+  python -m pip install -U huggingface_hub hf_xet
+
+$HOME/.local/bin/micromamba run \
+  -p /home/interns/Desktop/mat/.micromamba/envs/mat-a6000 \
+  huggingface-cli download camenduru/show \
+  models/arcface/ms1mv3_arcface_r100_fp16.pth \
+  --revision 064a379f415f674051145ec4862f54bd6a65073f \
+  --local-dir /home/interns/Desktop/face \
+  --local-dir-use-symlinks False
+
+mv /home/interns/Desktop/face/models/arcface/ms1mv3_arcface_r100_fp16.pth \
+   /home/interns/Desktop/face/models/arcface/iresnet100.pth
+
+sha256sum /home/interns/Desktop/face/models/arcface/iresnet100.pth
+Requirement already satisfied: huggingface_hub in /home/interns/.local/lib/python3.10/site-packages (1.20.1)
+Collecting huggingface_hub
+  Using cached huggingface_hub-1.21.0-py3-none-any.whl.metadata (14 kB)
+Requirement already satisfied: hf_xet in /home/interns/.local/lib/python3.10/site-packages (1.5.1)
+Collecting click>=8.4.0 (from huggingface_hub)
+  Using cached click-8.4.2-py3-none-any.whl.metadata (2.6 kB)
+Requirement already satisfied: filelock>=3.10.0 in /home/interns/.local/lib/python3.10/site-packages (from huggingface_hub) (3.29.1)
+Requirement already satisfied: fsspec>=2023.5.0 in /home/interns/.local/lib/python3.10/site-packages (from huggingface_hub) (2026.4.0)
+Requirement already satisfied: httpx<1,>=0.23.0 in /home/interns/.local/lib/python3.10/site-packages (from huggingface_hub) (0.28.1)
+Requirement already satisfied: packaging>=20.9 in /home/interns/.local/lib/python3.10/site-packages (from huggingface_hub) (26.2)
+Requirement already satisfied: pyyaml>=5.1 in /home/interns/Desktop/mat/.micromamba/envs/mat-a6000/lib/python3.10/site-packages (from huggingface_hub) (6.0.3)
+Requirement already satisfied: tqdm>=4.42.1 in /home/interns/.local/lib/python3.10/site-packages (from huggingface_hub) (4.68.1)
+Requirement already satisfied: typer<0.26.0,>=0.20.0 in /home/interns/.local/lib/python3.10/site-packages (from huggingface_hub) (0.25.1)
+Requirement already satisfied: typing-extensions>=4.1.0 in /home/interns/.local/lib/python3.10/site-packages (from huggingface_hub) (4.15.0)
+Requirement already satisfied: anyio in /home/interns/.local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface_hub) (4.13.0)
+Requirement already satisfied: certifi in /home/interns/Desktop/mat/.micromamba/envs/mat-a6000/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface_hub) (2026.6.17)
+Requirement already satisfied: httpcore==1.* in /home/interns/.local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface_hub) (1.0.9)
+Requirement already satisfied: idna in /home/interns/Desktop/mat/.micromamba/envs/mat-a6000/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface_hub) (3.18)
+Requirement already satisfied: h11>=0.16 in /home/interns/.local/lib/python3.10/site-packages (from httpcore==1.*->httpx<1,>=0.23.0->huggingface_hub) (0.16.0)
+Requirement already satisfied: shellingham>=1.3.0 in /home/interns/.local/lib/python3.10/site-packages (from typer<0.26.0,>=0.20.0->huggingface_hub) (1.5.4)
+Requirement already satisfied: rich>=13.8.0 in /home/interns/.local/lib/python3.10/site-packages (from typer<0.26.0,>=0.20.0->huggingface_hub) (14.3.4)
+Requirement already satisfied: annotated-doc>=0.0.2 in /home/interns/.local/lib/python3.10/site-packages (from typer<0.26.0,>=0.20.0->huggingface_hub) (0.0.4)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /home/interns/.local/lib/python3.10/site-packages (from rich>=13.8.0->typer<0.26.0,>=0.20.0->huggingface_hub) (4.2.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /home/interns/.local/lib/python3.10/site-packages (from rich>=13.8.0->typer<0.26.0,>=0.20.0->huggingface_hub) (2.20.0)
+Requirement already satisfied: mdurl~=0.1 in /home/interns/.local/lib/python3.10/site-packages (from markdown-it-py>=2.2.0->rich>=13.8.0->typer<0.26.0,>=0.20.0->huggingface_hub) (0.1.2)
+Requirement already satisfied: exceptiongroup>=1.0.2 in /home/interns/.local/lib/python3.10/site-packages (from anyio->httpx<1,>=0.23.0->huggingface_hub) (1.3.1)
+Using cached huggingface_hub-1.21.0-py3-none-any.whl (721 kB)
+Using cached click-8.4.2-py3-none-any.whl (119 kB)
+Installing collected packages: click, huggingface_hub
+  Attempting uninstall: click
+    Found existing installation: click 8.3.3
+    Uninstalling click-8.3.3:
+      Successfully uninstalled click-8.3.3
+  Attempting uninstall: huggingface_hub
+    Found existing installation: huggingface_hub 1.20.1
+    Uninstalling huggingface_hub-1.20.1:
+      Successfully uninstalled huggingface_hub-1.20.1
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+browsr 1.24.0 requires click~=8.3.1, but you have click 8.4.2 which is incompatible.
+Successfully installed click-8.4.2 huggingface_hub-0.36.2
+Warning: `huggingface-cli` is deprecated and no longer works. Use `hf` instead.
+
+Hint: `hf` is already installed! Use it directly.
+
+Hint: Examples:
+  hf auth login
+  hf download unsloth/gemma-4-31B-it-GGUF
+  hf upload my-cool-model . .
+  hf models ls --search "gemma"
+  hf repos ls --format json
+  hf jobs run python:3.12 python -c 'print("Hello!")'
+  hf --help
+
+mv: cannot stat '/home/interns/Desktop/face/models/arcface/ms1mv3_arcface_r100_fp16.pth': No such file or directory
+sha256sum: /home/interns/Desktop/face/models/arcface/iresnet100.pth: No such file or directory
+interns@workstation003:~/Desktop/face$ cd /home/interns/Desktop/face
+mkdir -p models/arcface
+
+$HOME/.local/bin/micromamba run \
+  -p /home/interns/Desktop/mat/.micromamba/envs/mat-a6000 \
+  python -m pip install -U huggingface_hub hf_xet
+
+$HOME/.local/bin/micromamba run \
+  -p /home/interns/Desktop/mat/.micromamba/envs/mat-a6000 \
+  hf download camenduru/show \
+  models/arcface/ms1mv3_arcface_r100_fp16.pth \
+  --revision 064a379f415f674051145ec4862f54bd6a65073f \
+  --local-dir /home/interns/Desktop/face \
+  --local-dir-use-symlinks False
+
+mv /home/interns/Desktop/face/models/arcface/ms1mv3_arcface_r100_fp16.pth \
+   /home/interns/Desktop/face/models/arcface/iresnet100.pth
+
+sha256sum /home/interns/Desktop/face/models/arcface/iresnet100.pth
+Requirement already satisfied: huggingface_hub in /home/interns/Desktop/mat/.micromamba/envs/mat-a6000/lib/python3.10/site-packages (0.36.2)
+Collecting huggingface_hub
+  Using cached huggingface_hub-1.21.0-py3-none-any.whl.metadata (14 kB)
+Requirement already satisfied: hf_xet in /home/interns/.local/lib/python3.10/site-packages (1.5.1)
+Requirement already satisfied: click>=8.4.0 in /home/interns/Desktop/mat/.micromamba/envs/mat-a6000/lib/python3.10/site-packages (from huggingface_hub) (8.4.2)
+Requirement already satisfied: filelock>=3.10.0 in /home/interns/.local/lib/python3.10/site-packages (from huggingface_hub) (3.29.1)
+Requirement already satisfied: fsspec>=2023.5.0 in /home/interns/.local/lib/python3.10/site-packages (from huggingface_hub) (2026.4.0)
+Requirement already satisfied: httpx<1,>=0.23.0 in /home/interns/.local/lib/python3.10/site-packages (from huggingface_hub) (0.28.1)
+Requirement already satisfied: packaging>=20.9 in /home/interns/.local/lib/python3.10/site-packages (from huggingface_hub) (26.2)
+Requirement already satisfied: pyyaml>=5.1 in /home/interns/Desktop/mat/.micromamba/envs/mat-a6000/lib/python3.10/site-packages (from huggingface_hub) (6.0.3)
+Requirement already satisfied: tqdm>=4.42.1 in /home/interns/.local/lib/python3.10/site-packages (from huggingface_hub) (4.68.1)
+Requirement already satisfied: typer<0.26.0,>=0.20.0 in /home/interns/.local/lib/python3.10/site-packages (from huggingface_hub) (0.25.1)
+Requirement already satisfied: typing-extensions>=4.1.0 in /home/interns/.local/lib/python3.10/site-packages (from huggingface_hub) (4.15.0)
+Requirement already satisfied: anyio in /home/interns/.local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface_hub) (4.13.0)
+Requirement already satisfied: certifi in /home/interns/Desktop/mat/.micromamba/envs/mat-a6000/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface_hub) (2026.6.17)
+Requirement already satisfied: httpcore==1.* in /home/interns/.local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface_hub) (1.0.9)
+Requirement already satisfied: idna in /home/interns/Desktop/mat/.micromamba/envs/mat-a6000/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface_hub) (3.18)
+Requirement already satisfied: h11>=0.16 in /home/interns/.local/lib/python3.10/site-packages (from httpcore==1.*->httpx<1,>=0.23.0->huggingface_hub) (0.16.0)
+Requirement already satisfied: shellingham>=1.3.0 in /home/interns/.local/lib/python3.10/site-packages (from typer<0.26.0,>=0.20.0->huggingface_hub) (1.5.4)
+Requirement already satisfied: rich>=13.8.0 in /home/interns/.local/lib/python3.10/site-packages (from typer<0.26.0,>=0.20.0->huggingface_hub) (14.3.4)
+Requirement already satisfied: annotated-doc>=0.0.2 in /home/interns/.local/lib/python3.10/site-packages (from typer<0.26.0,>=0.20.0->huggingface_hub) (0.0.4)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /home/interns/.local/lib/python3.10/site-packages (from rich>=13.8.0->typer<0.26.0,>=0.20.0->huggingface_hub) (4.2.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /home/interns/.local/lib/python3.10/site-packages (from rich>=13.8.0->typer<0.26.0,>=0.20.0->huggingface_hub) (2.20.0)
+Requirement already satisfied: mdurl~=0.1 in /home/interns/.local/lib/python3.10/site-packages (from markdown-it-py>=2.2.0->rich>=13.8.0->typer<0.26.0,>=0.20.0->huggingface_hub) (0.1.2)
+Requirement already satisfied: exceptiongroup>=1.0.2 in /home/interns/.local/lib/python3.10/site-packages (from anyio->httpx<1,>=0.23.0->huggingface_hub) (1.3.1)
+Using cached huggingface_hub-1.21.0-py3-none-any.whl (721 kB)
+Installing collected packages: huggingface_hub
+  Attempting uninstall: huggingface_hub
+    Found existing installation: huggingface_hub 0.36.2
+    Uninstalling huggingface_hub-0.36.2:
+      Successfully uninstalled huggingface_hub-0.36.2
+Successfully installed huggingface_hub-1.21.0
+Usage: hf download [OPTIONS] REPO_ID [FILENAMES]...
+Try 'hf download --help' for help.
+
+Error: No such option '--local-dir-use-symlinks'.
+
+Available options for 'hf download':
+  --type, --repo-type [model|dataset|space] The type of repository (model, dataset, or space).  [default: (model)]
+  --revision TEXT                Git revision id which can be a branch name, a tag, or a commit hash.
+  --include TEXT                 Glob patterns to include from files to download. eg: *.json
+  --exclude TEXT                 Glob patterns to exclude from files to download.
+  --cache-dir TEXT               Directory where to save files.
+  --local-dir TEXT               If set, the downloaded file will be placed under this directory. Check out https://huggingface.co/docs/huggingface_hub/guides/download#download-files-to-a-local-folder for more details.
+  --force-download / --no-force-download If True, the files will be downloaded even if they are already cached.  [default: no-force-download]
+  --dry-run / --no-dry-run       If True, perform a dry run without actually downloading the file.  [default: no-dry-run]
+  --token TEXT                   A User Access Token generated from https://huggingface.co/settings/tokens.
+  --max-workers INTEGER          Maximum number of workers to use for downloading files. Default is 8.  [default: 8]
+  -h, --help                     Show this message and exit.
+
+Run 'hf download --help' for full details.
+
+Did you mean: --local-dir?
+mv: cannot stat '/home/interns/Desktop/face/models/arcface/ms1mv3_arcface_r100_fp16.pth': No such file or directory
+sha256sum: /home/interns/Desktop/face/models/arcface/iresnet100.pth: No such file or directory
+interns@workstation003:~/Desktop/face$ 

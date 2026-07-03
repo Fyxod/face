@@ -1,0 +1,5 @@
+{
+  "checkpoint_path": "/home/interns/Desktop/face/models/arcface/iresnet100.pth",
+  "message": "Place a pretrained ArcFace iResNet-100 checkpoint at this path or rerun with --download-url.",
+  "status": "missing_checkpoint"
+}
