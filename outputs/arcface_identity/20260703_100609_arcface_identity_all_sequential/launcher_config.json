@@ -1,0 +1,18 @@
+{
+  "all_cases": true,
+  "arcface_checkpoint": "/home/interns/Desktop/face/models/arcface/iresnet100.pth",
+  "checkpoint_every": 25,
+  "force": false,
+  "geometry_config_path": "configs/geometry_default.json",
+  "init": null,
+  "iters": 400,
+  "lr": 0.05,
+  "mat_root": "/home/interns/Desktop/mat",
+  "mode": "run_matrix",
+  "output_root": "outputs/arcface_identity",
+  "quick": false,
+  "seed": 1234,
+  "skip_deepface": false,
+  "skip_downstream_eval": false,
+  "source_url": null
+}

@@ -1,0 +1,18 @@
+{
+  "all_cases": false,
+  "arcface_checkpoint": "/home/interns/Desktop/face/models/arcface/iresnet100.pth",
+  "checkpoint_every": 25,
+  "force": false,
+  "geometry_config_path": "configs/geometry_default.json",
+  "init": null,
+  "iters": 2,
+  "lr": 0.05,
+  "mat_root": "/home/interns/Desktop/mat",
+  "mode": "smoke_identity",
+  "output_root": "outputs/smoke",
+  "quick": true,
+  "seed": 1234,
+  "skip_deepface": true,
+  "skip_downstream_eval": true,
+  "source_url": null
+}

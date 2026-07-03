@@ -1,0 +1,112 @@
+<!doctype html><html><head><meta charset='utf-8'><title>FACE report</title><style>
+
+    body { margin:0; font-family: Inter, "Segoe UI", Arial, sans-serif; color:#17202a; background:white; }
+    main { max-width:1180px; margin:0 auto; padding:34px 28px 70px; }
+    h1 { font-size:34px; margin:0 0 6px; }
+    h2 { margin-top:48px; padding-top:18px; border-top:2px solid #d7dde5; }
+    h3 { margin-top:30px; }
+    .subtitle,.small { color:#5d6d7e; }
+    .card { border:1px solid #d7dde5; border-radius:12px; padding:18px; margin:20px 0; background:white; }
+    table { border-collapse:collapse; width:100%; font-size:13px; margin:12px 0 22px; }
+    th,td { border:1px solid #d7dde5; padding:7px 9px; vertical-align:top; }
+    th { background:#f6f8fb; text-align:left; }
+    .strip { width:100%; border:1px solid #d7dde5; border-radius:10px; display:block; }
+    .graph-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(430px,1fr)); gap:18px; }
+    figure { border:1px solid #d7dde5; border-radius:10px; padding:12px; margin:0; }
+    figure img { width:100%; display:block; }
+    figcaption { font-weight:650; margin-bottom:10px; }
+    .path { font-family:Consolas, monospace; font-size:12px; word-break:break-all; }
+    
+</style></head><body><main>
+<h1>FACE: ArcFace White-box Geometric Identity Optimization</h1><p class='subtitle'>Frozen iResNet-100 identity-distance results with downstream InstructPix2Pix evaluation</p><p class='small'>Author: Parth Katiyar</p>
+<div class='card'><p>FACE optimizes <code>Z = 1 - cosine_similarity</code> between original and perturbed full-image ArcFace iResNet-100 embeddings. The loss is exactly <code>loss = -Z</code>. ArcFace weights are frozen; only geometry parameters are optimized. No landmarks, face detection, alignment, visual counter-loss, VAE objective, or UNet objective is used.</p></div>
+<h2>1. Run matrix</h2><p>Four prompt-labeled cases are retained for compatibility. The ArcFace objective is not prompt-conditioned; prompts are used only for downstream InstructPix2Pix edit evaluation.</p>
+<div class='table-wrap'><table><thead><tr>
+<th>face</th>
+<th>prompt</th>
+<th>final Z</th>
+<th>best Z</th>
+<th>ArcFace cosine sim</th>
+<th>cosine score %</th>
+<th>SSIM</th>
+<th>PSNR</th>
+<th>edit output SSIM</th>
+<th>max disp px</th>
+<th>fraction clamped</th>
+</tr></thead><tbody>
+<tr>
+<td>face_002</td>
+<td>add black sunglasses</td>
+<td>0.0242</td>
+<td>0.0242</td>
+<td>0.9758</td>
+<td>97.580</td>
+<td>0.9786</td>
+<td>25.512</td>
+<td>0.6861</td>
+<td>5.5964</td>
+<td>0.0000</td>
+</tr>
+<tr>
+<td>face_002</td>
+<td>add headphones</td>
+<td>0.0292</td>
+<td>0.0293</td>
+<td>0.9708</td>
+<td>97.077</td>
+<td>0.9679</td>
+<td>23.752</td>
+<td>0.6030</td>
+<td>7.6190</td>
+<td>0.0000</td>
+</tr>
+<tr>
+<td>face_005</td>
+<td>add black sunglasses</td>
+<td>0.0316</td>
+<td>0.0317</td>
+<td>0.9684</td>
+<td>96.836</td>
+<td>0.9636</td>
+<td>23.174</td>
+<td>0.6932</td>
+<td>13.032</td>
+<td>0.0152</td>
+</tr>
+<tr>
+<td>face_005</td>
+<td>add headphones</td>
+<td>0.0311</td>
+<td>0.0311</td>
+<td>0.9689</td>
+<td>96.892</td>
+<td>0.9613</td>
+<td>22.914</td>
+<td>0.6513</td>
+<td>14.629</td>
+<td>0.0000</td>
+</tr>
+</tbody></table></div>
+<h2>2. Case image strips</h2>
+<div class='card'><h3>face_002 — add black sunglasses</h3><img class='strip' src='strips/face_face_002_add_black_sunglasses.png' alt='strip'><p class='path'>outputs/arcface_identity/20260703_100609_arcface_identity_all_sequential/runs/arcface_identity/arcface_iresnet100/face_002__add_black_sunglasses</p></div>
+<div class='card'><h3>face_002 — add headphones</h3><img class='strip' src='strips/face_face_002_add_headphones.png' alt='strip'><p class='path'>outputs/arcface_identity/20260703_100609_arcface_identity_all_sequential/runs/arcface_identity/arcface_iresnet100/face_002__add_headphones</p></div>
+<div class='card'><h3>face_005 — add black sunglasses</h3><img class='strip' src='strips/face_face_005_add_black_sunglasses.png' alt='strip'><p class='path'>outputs/arcface_identity/20260703_100609_arcface_identity_all_sequential/runs/arcface_identity/arcface_iresnet100/face_005__add_black_sunglasses</p></div>
+<div class='card'><h3>face_005 — add headphones</h3><img class='strip' src='strips/face_face_005_add_headphones.png' alt='strip'><p class='path'>outputs/arcface_identity/20260703_100609_arcface_identity_all_sequential/runs/arcface_identity/arcface_iresnet100/face_005__add_headphones</p></div>
+<h2>3. Graphs</h2><div class='graph-grid'>
+<figure><figcaption>Z vs iteration</figcaption><a href='graphs/z_vs_iteration.png'><img src='graphs/z_vs_iteration.png'></a></figure>
+<figure><figcaption>Loss vs iteration</figcaption><a href='graphs/loss_vs_iteration.png'><img src='graphs/loss_vs_iteration.png'></a></figure>
+<figure><figcaption>ArcFace cosine similarity vs iteration</figcaption><a href='graphs/cosine_similarity_vs_iteration.png'><img src='graphs/cosine_similarity_vs_iteration.png'></a></figure>
+<figure><figcaption>ArcFace cosine distance vs iteration</figcaption><a href='graphs/cosine_distance_vs_iteration.png'><img src='graphs/cosine_distance_vs_iteration.png'></a></figure>
+<figure><figcaption>Cosine identity similarity score (%) vs iteration</figcaption><a href='graphs/similarity_score_pct_vs_iteration.png'><img src='graphs/similarity_score_pct_vs_iteration.png'></a></figure>
+<figure><figcaption>PSNR to original vs iteration</figcaption><a href='graphs/psnr_vs_iteration.png'><img src='graphs/psnr_vs_iteration.png'></a></figure>
+<figure><figcaption>SSIM to original vs iteration</figcaption><a href='graphs/ssim_vs_iteration.png'><img src='graphs/ssim_vs_iteration.png'></a></figure>
+<figure><figcaption>Combined max displacement vs iteration</figcaption><a href='graphs/combined_max_disp_vs_iteration.png'><img src='graphs/combined_max_disp_vs_iteration.png'></a></figure>
+<figure><figcaption>Fraction clamped vs iteration</figcaption><a href='graphs/fraction_clamped_vs_iteration.png'><img src='graphs/fraction_clamped_vs_iteration.png'></a></figure>
+<figure><figcaption>Final Z vs final SSIM</figcaption><a href='graphs/final_z_vs_ssim.png'><img src='graphs/final_z_vs_ssim.png'></a></figure>
+<figure><figcaption>Final Z vs final PSNR</figcaption><a href='graphs/final_z_vs_psnr.png'><img src='graphs/final_z_vs_psnr.png'></a></figure>
+<figure><figcaption>Component max displacement</figcaption><a href='graphs/component_max_displacement.png'><img src='graphs/component_max_displacement.png'></a></figure>
+</div><h2>4. Notes</h2><ul>
+<li>Completed runs collected: 4.</li>
+<li>Run root: <span class='path'>outputs/arcface_identity/20260703_100609_arcface_identity_all_sequential</span></li>
+<li>Missing artifacts recorded: 0.</li>
+</ul></main></body></html>
