@@ -270,22 +270,11 @@ def make_graphs(runs: list[dict[str, Any]], output_root: Path) -> list[dict[str,
         ("Cosine identity similarity score (%) vs iteration", "identity_similarity_score_pct", "score (%)", "similarity_score_pct_vs_iteration.png"),
         ("PSNR to original vs iteration", "psnr_to_original", "PSNR", "psnr_vs_iteration.png"),
         ("SSIM to original vs iteration", "ssim_to_original", "SSIM", "ssim_vs_iteration.png"),
-        ("Combined max displacement vs iteration", "combined_max_disp_px", "pixels", "combined_max_disp_vs_iteration.png"),
-        ("Fraction clamped vs iteration", "fraction_clamped_total", "fraction", "fraction_clamped_vs_iteration.png"),
     ]
     for title, key, ylabel, name in specs:
         path = graph_dir / name
         plot_lines(path, title, ylabel, runs, key)
         graphs.append({"title": title, "path": path.relative_to(output_root).as_posix()})
-    path = graph_dir / "final_z_vs_ssim.png"
-    plot_scatter(path, "Final Z vs final SSIM", runs, "final_ssim_to_original", "final_Z", "SSIM to original", "final Z")
-    graphs.append({"title": "Final Z vs final SSIM", "path": path.relative_to(output_root).as_posix()})
-    path = graph_dir / "final_z_vs_psnr.png"
-    plot_scatter(path, "Final Z vs final PSNR", runs, "final_psnr_to_original", "final_Z", "PSNR to original", "final Z")
-    graphs.append({"title": "Final Z vs final PSNR", "path": path.relative_to(output_root).as_posix()})
-    path = graph_dir / "component_max_displacement.png"
-    plot_components(path, runs)
-    graphs.append({"title": "Component max displacement", "path": path.relative_to(output_root).as_posix()})
     return graphs
 
 

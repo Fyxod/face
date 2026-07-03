@@ -51,23 +51,3 @@ FACE optimizes `Z = 1 - cosine_similarity` with `loss = -Z` against frozen ArcFa
 ### SSIM to original vs iteration
 
 ![SSIM to original vs iteration](graphs/ssim_vs_iteration.png)
-
-### Combined max displacement vs iteration
-
-![Combined max displacement vs iteration](graphs/combined_max_disp_vs_iteration.png)
-
-### Fraction clamped vs iteration
-
-![Fraction clamped vs iteration](graphs/fraction_clamped_vs_iteration.png)
-
-### Final Z vs final SSIM
-
-![Final Z vs final SSIM](graphs/final_z_vs_ssim.png)
-
-### Final Z vs final PSNR
-
-![Final Z vs final PSNR](graphs/final_z_vs_psnr.png)
-
-### Component max displacement
-
-![Component max displacement](graphs/component_max_displacement.png)

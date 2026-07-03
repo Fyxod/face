@@ -28,26 +28,6 @@
     {
       "path": "graphs/ssim_vs_iteration.png",
       "title": "SSIM to original vs iteration"
-    },
-    {
-      "path": "graphs/combined_max_disp_vs_iteration.png",
-      "title": "Combined max displacement vs iteration"
-    },
-    {
-      "path": "graphs/fraction_clamped_vs_iteration.png",
-      "title": "Fraction clamped vs iteration"
-    },
-    {
-      "path": "graphs/final_z_vs_ssim.png",
-      "title": "Final Z vs final SSIM"
-    },
-    {
-      "path": "graphs/final_z_vs_psnr.png",
-      "title": "Final Z vs final PSNR"
-    },
-    {
-      "path": "graphs/component_max_displacement.png",
-      "title": "Component max displacement"
     }
   ],
   "html": "report.html",
