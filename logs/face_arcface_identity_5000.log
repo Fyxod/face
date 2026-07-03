@@ -1,0 +1,37 @@
+/home/interns/Desktop/face/face/models/arcface.py:75: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  payload = torch.load(self.checkpoint_path, map_location="cpu")
+/home/interns/Desktop/face/face/models/iresnet.py:94: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(enabled=self.fp16):
+[face] input face_002: /home/interns/Desktop/mat/data/face_002/instruct_512.png
+[face] input face_005: /home/interns/Desktop/mat/data/face_005/instruct_512.png
+[face] running arcface_identity__face_002__add_black_sunglasses image=/home/interns/Desktop/mat/data/face_002/instruct_512.png
+Loading pipeline components...:   0%|          | 0/6 [00:00<?, ?it/s][0;93m2026-07-03 10:41:31.596922840 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"[m
+Loading pipeline components...:  33%|███▎      | 2/6 [00:00<00:00, 12.55it/s]Loading pipeline components...:  67%|██████▋   | 4/6 [00:00<00:00,  4.13it/s]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 196/196 [00:00<00:00, 2060.76it/s]
+Loading pipeline components...: 100%|██████████| 6/6 [00:01<00:00,  4.29it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:01<00:00,  4.56it/s]
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1783055500.616694 1873921 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+I0000 00:00:1783055500.681302 1873921 cpu_feature_guard.cc:227] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1783055503.273835 1873921 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+/home/interns/Desktop/face/face/models/iresnet.py:94: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(enabled=self.fp16):
+[face] running arcface_identity__face_002__add_headphones image=/home/interns/Desktop/mat/data/face_002/instruct_512.png
+Loading pipeline components...:   0%|          | 0/6 [00:00<?, ?it/s]Loading pipeline components...:  33%|███▎      | 2/6 [00:00<00:00,  9.73it/s]Loading pipeline components...:  50%|█████     | 3/6 [00:00<00:01,  2.88it/s]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 196/196 [00:00<00:00, 2020.69it/s]
+Loading pipeline components...: 100%|██████████| 6/6 [00:01<00:00,  5.09it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:01<00:00,  4.87it/s]
+/home/interns/Desktop/face/face/models/iresnet.py:94: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(enabled=self.fp16):
+[face] running arcface_identity__face_005__add_black_sunglasses image=/home/interns/Desktop/mat/data/face_005/instruct_512.png
+Loading pipeline components...:   0%|          | 0/6 [00:00<?, ?it/s]Loading pipeline components...:  33%|███▎      | 2/6 [00:00<00:00,  5.63it/s]Loading pipeline components...:  50%|█████     | 3/6 [00:01<00:01,  2.65it/s]Loading pipeline components...:  67%|██████▋   | 4/6 [00:01<00:00,  3.61it/s]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 196/196 [00:00<00:00, 2018.35it/s]
+Loading pipeline components...: 100%|██████████| 6/6 [00:01<00:00,  5.13it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:01<00:00,  4.42it/s]
+/home/interns/Desktop/face/face/models/iresnet.py:94: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(enabled=self.fp16):
+[face] running arcface_identity__face_005__add_headphones image=/home/interns/Desktop/mat/data/face_005/instruct_512.png
+Loading pipeline components...:   0%|          | 0/6 [00:00<?, ?it/s]Loading pipeline components...:  33%|███▎      | 2/6 [00:00<00:00,  7.91it/s]Loading pipeline components...:  50%|█████     | 3/6 [00:00<00:01,  2.63it/s]Loading pipeline components...:  67%|██████▋   | 4/6 [00:01<00:00,  3.44it/s]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s][A
+Loading weights:  88%|████████▊ | 172/196 [00:00<00:00, 1719.14it/s][ALoading weights: 100%|██████████| 196/196 [00:00<00:00, 1754.86it/s]
+Loading pipeline components...: 100%|██████████| 6/6 [00:01<00:00,  4.95it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:01<00:00,  4.39it/s]
+[face-run] wrote: outputs/arcface_identity/20260703_103418_arcface_identity_all_sequential

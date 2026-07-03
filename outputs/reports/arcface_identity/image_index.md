@@ -1,4 +1,4 @@
-- face_002 / add black sunglasses: strips/face_face_002_add_black_sunglasses.jpg
-- face_002 / add headphones: strips/face_face_002_add_headphones.jpg
-- face_005 / add black sunglasses: strips/face_face_005_add_black_sunglasses.jpg
-- face_005 / add headphones: strips/face_face_005_add_headphones.jpg
+- face_002 / add black sunglasses: strips/face_face_002_add_black_sunglasses.png
+- face_002 / add headphones: strips/face_face_002_add_headphones.png
+- face_005 / add black sunglasses: strips/face_face_005_add_black_sunglasses.png
+- face_005 / add headphones: strips/face_face_005_add_headphones.png

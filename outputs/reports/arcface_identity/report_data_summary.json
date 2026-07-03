@@ -1,5 +1,5 @@
 {
-  "compress_images": true,
+  "compress_images": false,
   "graphs": [
     {
       "path": "graphs/z_vs_iteration.png",
@@ -35,5 +35,5 @@
   "num_missing": 0,
   "num_runs": 4,
   "pdf": "report.pdf",
-  "run_root": "outputs/arcface_identity/20260703_100609_arcface_identity_all_sequential"
+  "run_root": "outputs/arcface_identity/20260703_103418_arcface_identity_all_sequential"
 }
