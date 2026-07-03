@@ -1,6 +1,30 @@
 # FACE A6000 instructions
 
-Use these on the A6000 Linux machine.
+These are the commands to run on the A6000 Linux machine.
+
+Important fix: do **not** use the old `huggingface-cli download` command and do **not** use `--local-dir-use-symlinks`. Your log showed that `huggingface-cli` is deprecated and the new `hf download` no longer accepts that option.
+
+Use the downloader script below. It tries direct `curl` first, falls back to the Python `huggingface_hub` API if needed, checks SHA256, and then runs FACE checkpoint validation.
+
+Checkpoint source used by the script:
+
+```text
+https://huggingface.co/camenduru/show/blob/064a379f415f674051145ec4862f54bd6a65073f/models/arcface/ms1mv3_arcface_r100_fp16.pth
+```
+
+Expected SHA256:
+
+```text
+a566a62357f0c55b679d9ff2f022a294486568be0c00665d39029d0e46a8109b
+```
+
+Final local checkpoint path:
+
+```text
+/home/interns/Desktop/face/models/arcface/iresnet100.pth
+```
+
+Do not commit this checkpoint.
 
 ## 0. Enter repo and pull
 
@@ -9,44 +33,45 @@ cd /home/interns/Desktop/face
 git pull origin main
 ```
 
-## 1. Optional dependency check/install
+## 1. Download and validate ArcFace checkpoint
+
+Run this exactly:
 
 ```bash
-$HOME/.local/bin/micromamba run \
-  -p /home/interns/Desktop/mat/.micromamba/envs/mat-a6000 \
-  bash scripts/install_linux_a6000.sh
+cd /home/interns/Desktop/face
+bash scripts/download_arcface_checkpoint_a6000.sh /home/interns/Desktop/face
 ```
 
-## 2. Put ArcFace iResNet-100 checkpoint in place
-
-Expected file:
+Expected success signs:
 
 ```text
-/home/interns/Desktop/face/models/arcface/iresnet100.pth
+[face-ckpt] existing checkpoint is valid.
 ```
 
-Do not commit this file.
+or:
 
-## 3. Validate ArcFace checkpoint
-
-```bash
-$HOME/.local/bin/micromamba run \
-  -p /home/interns/Desktop/mat/.micromamba/envs/mat-a6000 \
-  python -m face.scripts.setup_arcface \
-  --checkpoint-path /home/interns/Desktop/face/models/arcface/iresnet100.pth
+```text
+[face-ckpt] curl download ok.
+[face-ckpt] final SHA:
+a566a62357f0c55b679d9ff2f022a294486568be0c00665d39029d0e46a8109b  /home/interns/Desktop/face/models/arcface/iresnet100.pth
+[face-setup] checkpoint ok: /home/interns/Desktop/face/models/arcface/iresnet100.pth
 ```
 
-Expected report:
+If this step fails, stop. Do not run optimization.
+
+The setup report is written here:
 
 ```text
 outputs/smoke/arcface_setup_report.json
 ```
 
-If this fails, do not run optimization. Fix the checkpoint first.
+## 2. Identity smoke
 
-## 4. Identity smoke
+Run after checkpoint validation succeeds:
 
 ```bash
+cd /home/interns/Desktop/face
+
 $HOME/.local/bin/micromamba run \
   -p /home/interns/Desktop/mat/.micromamba/envs/mat-a6000 \
   python -m face.scripts.smoke_identity \
@@ -61,9 +86,26 @@ Expected root:
 outputs/smoke/
 ```
 
-## 5. Quick timing smoke
+This checks:
+
+- ArcFace checkpoint loads as iResNet-100
+- ArcFace parameters are frozen
+- full 512×512 RGB image resizes differentiably to 112×112
+- embedding is finite
+- same-image cosine similarity is near 1
+- `Z = 1 - cosine_similarity` is finite
+- `loss = -Z` is finite
+- gradients reach geometry parameters
+- ArcFace receives no optimizer updates
+- hard projection executes
+- PSNR and SSIM are logged
+- history/images are saved
+
+## 3. Quick timing smoke
 
 ```bash
+cd /home/interns/Desktop/face
+
 $HOME/.local/bin/micromamba run \
   -p /home/interns/Desktop/mat/.micromamba/envs/mat-a6000 \
   python -m face.scripts.smoke_timing \
@@ -80,9 +122,11 @@ Expected root:
 outputs/smoke_timing/
 ```
 
-## 6. All-case timing smoke
+## 4. All-case timing smoke
 
 ```bash
+cd /home/interns/Desktop/face
+
 $HOME/.local/bin/micromamba run \
   -p /home/interns/Desktop/mat/.micromamba/envs/mat-a6000 \
   python -m face.scripts.smoke_timing \
@@ -93,7 +137,7 @@ $HOME/.local/bin/micromamba run \
   --geometry-config configs/geometry_default.json
 ```
 
-## 7. Full 150-iteration run
+## 5. Full 150-iteration run
 
 Run only after checkpoint validation and smoke pass:
 
@@ -114,9 +158,11 @@ $HOME/.local/bin/micromamba run \
 
 Completed runs are skipped if `DONE.json` exists. Use `--force` only if you intentionally want to overwrite.
 
-## 8. Summarize
+## 6. Summarize
 
 ```bash
+cd /home/interns/Desktop/face
+
 $HOME/.local/bin/micromamba run \
   -p /home/interns/Desktop/mat/.micromamba/envs/mat-a6000 \
   python -m face.scripts.summarize_runs \
@@ -124,9 +170,11 @@ $HOME/.local/bin/micromamba run \
   --output-root outputs/reports/arcface_identity
 ```
 
-## 9. Build report with compressed images
+## 7. Build report with compressed images
 
 ```bash
+cd /home/interns/Desktop/face
+
 $HOME/.local/bin/micromamba run \
   -p /home/interns/Desktop/mat/.micromamba/envs/mat-a6000 \
   python -m face.scripts.build_report \
@@ -151,16 +199,56 @@ outputs/reports/arcface_identity/
   strips/
 ```
 
-## 10. Push after run
+## 8. Push after run
 
 Do not add checkpoint weights or theta files.
 
 ```bash
+cd /home/interns/Desktop/face
 git status -sb
+
 git add face configs scripts README.md instructions.md requirements.txt pyproject.toml .gitignore
-git add outputs/smoke outputs/smoke_timing outputs/arcface_identity outputs/reports logs/face_arcface_identity_150.log
-git commit -m "Add FACE ArcFace identity results"
+git add outputs/smoke outputs/smoke_timing outputs/arcface_identity outputs/reports logs/face_arcface_identity_150.log logs.txt
+
+git commit -m "Add FACE ArcFace identity results" || true
 git push origin main
 ```
 
-If Git shows `models/arcface/iresnet100.pth`, `theta_final.pt`, or `theta_best.pt`, do not add them.
+Before committing, check that none of these are staged:
+
+```text
+models/arcface/iresnet100.pth
+theta_final.pt
+theta_best.pt
+*.pth
+*.pt
+```
+
+If any of those appear in `git status`, do not force-add them.
+
+## Manual fallback only if the script fails
+
+If `scripts/download_arcface_checkpoint_a6000.sh` fails because `curl` and `huggingface_hub` both fail, try this manual command. It intentionally does not use `huggingface-cli` and does not use `--local-dir-use-symlinks`.
+
+```bash
+cd /home/interns/Desktop/face
+mkdir -p models/arcface
+
+curl -L --fail --retry 5 --retry-delay 5 \
+  -o models/arcface/iresnet100.pth \
+  "https://huggingface.co/camenduru/show/resolve/064a379f415f674051145ec4862f54bd6a65073f/models/arcface/ms1mv3_arcface_r100_fp16.pth?download=true"
+
+sha256sum models/arcface/iresnet100.pth
+
+$HOME/.local/bin/micromamba run \
+  -p /home/interns/Desktop/mat/.micromamba/envs/mat-a6000 \
+  python -m face.scripts.setup_arcface \
+  --checkpoint-path /home/interns/Desktop/face/models/arcface/iresnet100.pth \
+  --source-name "camenduru/show models/arcface/ms1mv3_arcface_r100_fp16.pth revision 064a379f415f674051145ec4862f54bd6a65073f"
+```
+
+The SHA printed by `sha256sum` must be:
+
+```text
+a566a62357f0c55b679d9ff2f022a294486568be0c00665d39029d0e46a8109b
+```
