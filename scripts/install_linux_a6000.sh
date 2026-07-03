@@ -20,4 +20,4 @@ for name in ["torchvision", "diffusers", "transformers", "deepface", "cv2"]:
 PY
 
 echo "[face-install] Installing lightweight missing dependencies only."
-python -m pip install -U pillow numpy scipy pandas scikit-image matplotlib diffusers transformers accelerate safetensors sentencepiece protobuf deepface opencv-python
+python -m pip install -U pillow numpy scipy pandas scikit-image matplotlib reportlab diffusers transformers accelerate safetensors sentencepiece protobuf deepface opencv-python

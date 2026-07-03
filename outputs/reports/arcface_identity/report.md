@@ -8,19 +8,19 @@ FACE optimizes `Z = 1 - cosine_similarity` with `loss = -Z` against frozen ArcFa
 
 ### face_002 / add black sunglasses
 
-![strip](strips/face_face_002_add_black_sunglasses.png)
+![strip](strips/face_face_002_add_black_sunglasses.jpg)
 
 ### face_002 / add headphones
 
-![strip](strips/face_face_002_add_headphones.png)
+![strip](strips/face_face_002_add_headphones.jpg)
 
 ### face_005 / add black sunglasses
 
-![strip](strips/face_face_005_add_black_sunglasses.png)
+![strip](strips/face_face_005_add_black_sunglasses.jpg)
 
 ### face_005 / add headphones
 
-![strip](strips/face_face_005_add_headphones.png)
+![strip](strips/face_face_005_add_headphones.jpg)
 
 ## Graphs
 

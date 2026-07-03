@@ -192,6 +192,7 @@ outputs/reports/arcface_identity/
   identity_panel_all_runs.csv
   report.md
   report.html
+  report.pdf
   report_data_summary.json
   image_index.md
   missing_artifacts.md

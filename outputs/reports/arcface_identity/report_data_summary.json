@@ -1,5 +1,5 @@
 {
-  "compress_images": false,
+  "compress_images": true,
   "graphs": [
     {
       "path": "graphs/z_vs_iteration.png",
@@ -50,7 +50,10 @@
       "title": "Component max displacement"
     }
   ],
+  "html": "report.html",
+  "markdown": "report.md",
   "num_missing": 0,
   "num_runs": 4,
+  "pdf": "report.pdf",
   "run_root": "outputs/arcface_identity/20260703_100609_arcface_identity_all_sequential"
 }

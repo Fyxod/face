@@ -30,6 +30,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--run-folder", default=None)
     parser.add_argument("--run-root", default=None)
     parser.add_argument("--compress-images", action="store_true")
+    parser.add_argument("--no-pdf", action="store_true", help="Skip PDF generation.")
     return parser.parse_args()
 
 
@@ -146,7 +147,7 @@ def collect_runs(run_root: Path) -> tuple[list[dict[str, Any]], list[dict[str, s
                 "prompt": prompt,
                 "case": f"{face_id} / {prompt}",
                 "case_slug": slug(f"{face_id}_{prompt}"),
-                "run_dir": str(run_dir),
+                "run_dir": run_dir.as_posix(),
                 "summary": summary,
                 "config": config,
                 "history_rows": history_rows,
@@ -416,6 +417,130 @@ def build_markdown(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def make_pdf(data: dict[str, Any], output_root: Path, pdf_path: Path, compress_images: bool) -> None:
+    """Build a WOOD-style PDF report with tables, strips, and graphs."""
+
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.units import inch
+    from reportlab.platypus import Image as RLImage
+    from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+    styles = getSampleStyleSheet()
+    doc = SimpleDocTemplate(
+        str(pdf_path),
+        pagesize=letter,
+        rightMargin=0.45 * inch,
+        leftMargin=0.45 * inch,
+        topMargin=0.45 * inch,
+        bottomMargin=0.45 * inch,
+    )
+    story: list[Any] = []
+
+    def p(text: str, style: str = "BodyText") -> None:
+        story.append(Paragraph(text, styles[style]))
+        story.append(Spacer(1, 0.08 * inch))
+
+    def add_table(rows: list[dict[str, Any]], cols: list[tuple[str, str]], font_size: int = 6) -> None:
+        if not rows:
+            p("No rows available.")
+            return
+        table_data = [[label for _, label in cols]]
+        for row in rows:
+            table_data.append(
+                [
+                    fmt(row.get(key)) if isinstance(row.get(key), (int, float)) else str(row.get(key, ""))
+                    for key, _ in cols
+                ]
+            )
+        table = Table(table_data, repeatRows=1)
+        table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f1f5f9")),
+                    ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#cbd5e1")),
+                    ("FONT", (0, 0), (-1, -1), "Helvetica", font_size),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ]
+            )
+        )
+        story.append(table)
+        story.append(Spacer(1, 0.14 * inch))
+
+    def pdf_image_path(rel_path: str, max_px: tuple[int, int]) -> Path | None:
+        path = output_root / rel_path
+        if not path.exists():
+            return None
+        if not compress_images:
+            return path
+        out_dir = output_root / "pdf_images"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        out = out_dir / f"{slug(rel_path)}.jpg"
+        with Image.open(path) as raw:
+            img = raw.convert("RGB")
+            img.thumbnail(max_px, Image.Resampling.LANCZOS)
+            img.save(out, quality=72, optimize=True)
+        return out
+
+    def add_image(rel_path: str, max_w: float = 7.2 * inch, max_h: float = 4.7 * inch) -> None:
+        max_px = (int(max_w / inch * 145), int(max_h / inch * 145))
+        path = pdf_image_path(rel_path, max_px)
+        if path is None:
+            return
+        with Image.open(path) as img:
+            w, h = img.size
+        scale = min(max_w / max(w, 1), max_h / max(h, 1))
+        story.append(RLImage(str(path), width=w * scale, height=h * scale))
+        story.append(Spacer(1, 0.14 * inch))
+
+    per_cols = [
+        ("face_id", "face"),
+        ("prompt", "prompt"),
+        ("final_Z", "final Z"),
+        ("best_Z", "best Z"),
+        ("final_identity_cosine_similarity_raw", "cosine sim"),
+        ("final_identity_similarity_score_pct", "score %"),
+        ("ssim_to_original", "SSIM"),
+        ("psnr_to_original", "PSNR"),
+        ("output_ssim", "edit SSIM"),
+        ("max_disp_px", "max disp"),
+    ]
+
+    story.append(Paragraph(TITLE, styles["Title"]))
+    p(SUBTITLE, "Heading2")
+    p(f"Author: {AUTHOR}")
+    p(
+        "FACE optimizes <b>Z = 1 - cosine_similarity</b> between original and perturbed "
+        "full-image ArcFace iResNet-100 embeddings. The optimized loss is exactly "
+        "<b>loss = -Z</b>. ArcFace weights are frozen; only geometry parameters are optimized."
+    )
+    p(
+        "No landmarks, face detection, alignment, visual counter-loss, VAE objective, or UNet "
+        "objective is used. Prompts are retained only for downstream InstructPix2Pix evaluation."
+    )
+    p("Run matrix and final values", "Heading2")
+    add_table(data["per_run_rows"], per_cols, font_size=5)
+
+    story.append(PageBreak())
+    p("Case image strips", "Heading2")
+    for run in data["runs"]:
+        p(f"{run['face_id']} / {run['prompt']}", "Heading3")
+        add_image(run["strip_path"], max_w=7.2 * inch, max_h=2.4 * inch)
+
+    story.append(PageBreak())
+    p("Graphs", "Heading2")
+    for graph in data["graphs"]:
+        p(graph["title"], "Heading3")
+        add_image(graph["path"], max_w=7.1 * inch, max_h=4.2 * inch)
+
+    p("Notes", "Heading2")
+    p(f"Completed runs collected: {len(data['runs'])}.")
+    p(f"Run root: {data['run_root']}")
+    p(f"Missing artifacts recorded: {len(data['missing'])}.")
+    doc.build(story)
+
+
 def main() -> None:
     args = parse_args()
     run_root = resolve_run_root(args)
@@ -438,21 +563,26 @@ def main() -> None:
     (output_root / "image_index.md").write_text("\n".join(f"- {run['case']}: {run['strip_path']}" for run in runs) + "\n", encoding="utf-8")
     data = {
         "runs": runs,
-        "run_root": str(run_root),
+        "run_root": run_root.as_posix(),
         "missing": missing,
         "graphs": graphs,
         "per_run_rows": per_run_rows,
     }
     (output_root / "report.html").write_text(build_html(data), encoding="utf-8")
     (output_root / "report.md").write_text(build_markdown(data), encoding="utf-8")
+    if not args.no_pdf:
+        make_pdf(data, output_root, output_root / "report.pdf", bool(args.compress_images))
     (output_root / "report_data_summary.json").write_text(
         json.dumps(
             {
-                "run_root": str(run_root),
+                "run_root": run_root.as_posix(),
                 "num_runs": len(runs),
                 "num_missing": len(missing),
                 "graphs": graphs,
                 "compress_images": bool(args.compress_images),
+                "html": "report.html",
+                "markdown": "report.md",
+                "pdf": None if args.no_pdf else "report.pdf",
             },
             indent=2,
             sort_keys=True,
@@ -463,6 +593,8 @@ def main() -> None:
     print(f"[face-report] run root: {run_root}")
     print(f"[face-report] wrote: {output_root / 'report.html'}")
     print(f"[face-report] wrote: {output_root / 'report.md'}")
+    if not args.no_pdf:
+        print(f"[face-report] wrote: {output_root / 'report.pdf'}")
 
 
 if __name__ == "__main__":
