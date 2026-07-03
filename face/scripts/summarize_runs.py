@@ -161,12 +161,36 @@ def make_strip(run: dict[str, Any], output_root: Path, compress: bool) -> str:
     out_dir = output_root / "strips"
     out_dir.mkdir(parents=True, exist_ok=True)
     size = (360, 360) if compress else (512, 512)
+    diff_dir = output_root / "edit_diffs"
+    diff_dir.mkdir(parents=True, exist_ok=True)
+
+    def edit_difference(left_path: Path, right_path: Path, name: str) -> Path:
+        out = diff_dir / f"{name}_{run['case_slug']}.jpg"
+        if not left_path.exists() or not right_path.exists():
+            Image.new("RGB", size, "#f3f4f6").save(out, quality=82, optimize=True)
+            return out
+        left = Image.open(left_path).convert("RGB").resize(size, Image.Resampling.LANCZOS)
+        right = Image.open(right_path).convert("RGB").resize(size, Image.Resampling.LANCZOS)
+        diff = ImageChops.difference(left, right)
+        diff = ImageEnhance.Brightness(diff).enhance(8.0)
+        diff = ImageOps.autocontrast(diff, cutoff=0.5)
+        diff.save(out, quality=86, optimize=True)
+        return out
+
+    original_edit_diff = edit_difference(run["images"]["clean_edit"], run["images"]["original"], "original_edit_minus_original")
+    perturbed_edit_diff = edit_difference(
+        run["images"]["perturbed_edit"],
+        run["images"]["perturbed_best"],
+        "perturbed_edit_minus_perturbed",
+    )
     labels = [
         ("Original", run["images"]["original"]),
         ("Perturbed Best", run["images"]["perturbed_best"]),
         ("Abs Difference x8", run["images"]["input_difference"]),
         ("Clean Edit", run["images"]["clean_edit"]),
+        ("Original Edit - Original", original_edit_diff),
         ("Perturbed Edit", run["images"]["perturbed_edit"]),
+        ("Perturbed Edit - Perturbed", perturbed_edit_diff),
     ]
     cells = []
     for label, path in labels:

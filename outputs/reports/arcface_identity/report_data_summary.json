@@ -1,5 +1,5 @@
 {
-  "compress_images": false,
+  "compress_images": true,
   "graphs": [
     {
       "path": "graphs/z_vs_iteration.png",
