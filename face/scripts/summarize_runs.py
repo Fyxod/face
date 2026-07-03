@@ -183,6 +183,11 @@ def make_strip(run: dict[str, Any], output_root: Path, compress: bool) -> str:
         run["images"]["perturbed_best"],
         "perturbed_edit_minus_perturbed",
     )
+    perturbed_edit_original_edit_diff = edit_difference(
+        run["images"]["perturbed_edit"],
+        run["images"]["clean_edit"],
+        "perturbed_edit_minus_original_edit",
+    )
     labels = [
         ("Original", run["images"]["original"]),
         ("Perturbed Best", run["images"]["perturbed_best"]),
@@ -191,6 +196,7 @@ def make_strip(run: dict[str, Any], output_root: Path, compress: bool) -> str:
         ("Original Edit - Original", original_edit_diff),
         ("Perturbed Edit", run["images"]["perturbed_edit"]),
         ("Perturbed Edit - Perturbed", perturbed_edit_diff),
+        ("Perturbed Edit - Original Edit", perturbed_edit_original_edit_diff),
     ]
     cells = []
     for label, path in labels:
