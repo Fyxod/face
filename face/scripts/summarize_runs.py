@@ -18,15 +18,15 @@ import matplotlib.pyplot as plt
 from PIL import Image, ImageChops, ImageEnhance, ImageOps
 
 
-TITLE = "FACE: ArcFace White-box Geometric Identity Optimization"
-SUBTITLE = "Frozen iResNet-100 identity-distance results with downstream InstructPix2Pix evaluation"
+TITLE = "FACE: ArcFace White-box Spatial + Frequency Identity Optimization"
+SUBTITLE = "Frozen iResNet-100 identity-distance results with image-DCT perturbation and downstream InstructPix2Pix evaluation"
 AUTHOR = "Parth Katiyar"
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Summarize FACE result folders.")
-    parser.add_argument("--results-root", default="outputs/arcface_identity")
-    parser.add_argument("--output-root", default="outputs/reports/arcface_identity")
+    parser.add_argument("--results-root", default="outputs/arcface_identity_dct_image")
+    parser.add_argument("--output-root", default="outputs/reports/arcface_identity_dct_image")
     parser.add_argument("--run-folder", default=None)
     parser.add_argument("--run-root", default=None)
     parser.add_argument("--compress-images", action="store_true")
@@ -134,13 +134,16 @@ def collect_runs(run_root: Path) -> tuple[list[dict[str, Any]], list[dict[str, s
             "perturbed_best": run_dir / "perturbed_best.png",
             "input_difference": run_dir / "input_difference_best.png",
             "combined_flow": run_dir / "combined_flow_best.png",
+            "dct_difference": run_dir / "dct_only_difference_x10.png",
             "clean_edit": run_dir / "original_edited.png",
             "perturbed_edit": run_dir / "perturbed_best_edited.png",
             "comparison_sheet": run_dir / "comparison_sheet.png",
         }
+        optional = {"dct_difference"}
         for label, path in images.items():
             if not path.exists():
-                missing.append({"case": f"{face_id} / {prompt}", "artifact": label, "path": str(path)})
+                if label not in optional:
+                    missing.append({"case": f"{face_id} / {prompt}", "artifact": label, "path": str(path)})
         runs.append(
             {
                 "face_id": face_id,
@@ -192,6 +195,7 @@ def make_strip(run: dict[str, Any], output_root: Path, compress: bool) -> str:
         ("Original", run["images"]["original"]),
         ("Perturbed Best", run["images"]["perturbed_best"]),
         ("Abs Difference x8", run["images"]["input_difference"]),
+        ("DCT Difference x10", run["images"]["dct_difference"]),
         ("Clean Edit", run["images"]["clean_edit"]),
         ("Original Edit - Original", original_edit_diff),
         ("Perturbed Edit", run["images"]["perturbed_edit"]),
@@ -302,8 +306,12 @@ def plot_mean_geometry_lines(path: Path, title: str, ylabel: str, runs: list[dic
     plt.close()
 
 
+def any_history_key(runs: list[dict[str, Any]], key: str) -> bool:
+    return any(to_float(row.get(key)) is not None for run in runs for row in run["history_rows"])
+
+
 def plot_components(path: Path, runs: list[dict[str, Any]]) -> None:
-    keys = ["tps_mean_disp", "delaunay_mean_disp", "rolling_mean_disp", "dct_mean_disp"]
+    keys = ["tps_mean_disp", "delaunay_mean_disp", "rolling_mean_disp"]
     path.parent.mkdir(parents=True, exist_ok=True)
     plt.figure(figsize=(10, 5.2), dpi=125)
     for key in keys:
@@ -349,10 +357,37 @@ def make_graphs(runs: list[dict[str, Any]], output_root: Path) -> list[dict[str,
             ("tps_mean_disp", "TPS"),
             ("delaunay_mean_disp", "Delaunay"),
             ("rolling_mean_disp", "Rolling"),
-            ("dct_mean_disp", "DCT"),
         ],
     )
     graphs.append({"title": "Geometry component diagnostics vs iteration", "path": component_path.relative_to(output_root).as_posix()})
+    dct_specs = [
+        ("DCT gain mean-absolute value vs iteration", "dct_gain_mean_abs", "mean abs gain", "dct_gain_mean_abs_vs_iteration.png"),
+        ("DCT coefficient-energy change vs iteration", "dct_relative_energy_change", "relative energy change", "dct_relative_energy_change_vs_iteration.png"),
+        ("DCT spatial-delta MSE vs iteration", "dct_spatial_delta_mse", "MSE", "dct_spatial_delta_mse_vs_iteration.png"),
+    ]
+    for title, key, ylabel, name in dct_specs:
+        if any_history_key(runs, key):
+            path = graph_dir / name
+            plot_lines(path, title, ylabel, runs, key)
+            graphs.append({"title": title, "path": path.relative_to(output_root).as_posix()})
+    if any_history_key(runs, "dct_low_frequency_energy_after"):
+        path = graph_dir / "dct_frequency_band_energy_vs_iteration.png"
+        plot_mean_geometry_lines(
+            path,
+            "DCT low/mid/high frequency energy vs iteration",
+            "mean coefficient energy after",
+            runs,
+            [
+                ("dct_low_frequency_energy_after", "low"),
+                ("dct_mid_frequency_energy_after", "mid"),
+                ("dct_high_frequency_energy_after", "high"),
+            ],
+        )
+        graphs.append({"title": "DCT low/mid/high frequency energy vs iteration", "path": path.relative_to(output_root).as_posix()})
+    if any(to_float(run["summary"].get("final_dct_relative_energy_change")) is not None for run in runs):
+        path = graph_dir / "z_vs_dct_relative_energy_change.png"
+        plot_scatter(path, "Final Z vs DCT coefficient-energy change", runs, "final_dct_relative_energy_change", "final_Z", "DCT relative energy change", "final Z")
+        graphs.append({"title": "Final Z vs DCT coefficient-energy change", "path": path.relative_to(output_root).as_posix()})
     return graphs
 
 
@@ -392,6 +427,9 @@ def build_tables(runs: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list
                 "output_ssim": summary.get("best_output_ssim"),
                 "output_l2": summary.get("best_output_l2"),
                 "max_disp_px": summary.get("final_combined_max_disp_px"),
+                "dct_gain_mean_abs": summary.get("final_dct_gain_mean_abs"),
+                "dct_energy_change": summary.get("final_dct_relative_energy_change"),
+                "dct_spatial_delta_mse": summary.get("final_dct_spatial_delta_mse"),
                 "fraction_clamped": summary.get("final_fraction_clamped_total"),
                 "seconds_per_iter": summary.get("mean_seconds_iter"),
                 "run_dir": run["run_dir"],
@@ -418,6 +456,8 @@ def build_html(data: dict[str, Any]) -> str:
         ("psnr_to_original", "PSNR"),
         ("output_ssim", "edit output SSIM"),
         ("max_disp_px", "max disp px"),
+        ("dct_gain_mean_abs", "DCT gain mean abs"),
+        ("dct_energy_change", "DCT energy change"),
         ("fraction_clamped", "fraction clamped"),
     ]
     css = """
@@ -443,7 +483,7 @@ def build_html(data: dict[str, Any]) -> str:
         css,
         "</style></head><body><main>",
         f"<h1>{html.escape(TITLE)}</h1><p class='subtitle'>{html.escape(SUBTITLE)}</p><p class='small'>Author: {html.escape(AUTHOR)}</p>",
-        "<div class='card'><p>FACE optimizes <code>Z = 1 - cosine_similarity</code> between original and perturbed full-image ArcFace iResNet-100 embeddings. The loss is exactly <code>loss = -Z</code>. ArcFace weights are frozen; only geometry parameters are optimized. No landmarks, face detection, alignment, visual counter-loss, VAE objective, or UNet objective is used.</p></div>",
+        "<div class='card'><p>FACE optimizes <code>Z = 1 - cosine_similarity</code> between original and perturbed full-image ArcFace iResNet-100 embeddings. The loss is exactly <code>loss = -Z</code>. ArcFace weights are frozen; only perturbation parameters are optimized. TPS, Delaunay, and rolling are coordinate perturbations. DCT is a blockwise image-frequency coefficient perturbation, not a flow field.</p></div>",
         "<h2>1. Run matrix</h2><p>Four prompt-labeled cases are retained for compatibility. The ArcFace objective is not prompt-conditioned; prompts are used only for downstream InstructPix2Pix edit evaluation.</p>",
         table_html(data["per_run_rows"], per_cols),
         "<h2>2. Case image strips</h2>",
@@ -467,7 +507,7 @@ def build_markdown(data: dict[str, Any]) -> str:
         "",
         SUBTITLE,
         "",
-        "FACE optimizes `Z = 1 - cosine_similarity` with `loss = -Z` against frozen ArcFace iResNet-100.",
+        "FACE optimizes `Z = 1 - cosine_similarity` with `loss = -Z` against frozen ArcFace iResNet-100. DCT is reported as an image-frequency coefficient perturbation, not a spatial flow.",
         "",
         "## Image strips",
         "",
@@ -568,6 +608,8 @@ def make_pdf(data: dict[str, Any], output_root: Path, pdf_path: Path, compress_i
         ("psnr_to_original", "PSNR"),
         ("output_ssim", "edit SSIM"),
         ("max_disp_px", "max disp"),
+        ("dct_gain_mean_abs", "DCT gain"),
+        ("dct_energy_change", "DCT energy"),
     ]
 
     story.append(Paragraph(TITLE, styles["Title"]))
@@ -576,11 +618,11 @@ def make_pdf(data: dict[str, Any], output_root: Path, pdf_path: Path, compress_i
     p(
         "FACE optimizes <b>Z = 1 - cosine_similarity</b> between original and perturbed "
         "full-image ArcFace iResNet-100 embeddings. The optimized loss is exactly "
-        "<b>loss = -Z</b>. ArcFace weights are frozen; only geometry parameters are optimized."
+        "<b>loss = -Z</b>. ArcFace weights are frozen; only perturbation parameters are optimized."
     )
     p(
-        "No landmarks, face detection, alignment, visual counter-loss, VAE objective, or UNet "
-        "objective is used. Prompts are retained only for downstream InstructPix2Pix evaluation."
+        "TPS, Delaunay, and rolling are coordinate perturbations. DCT is a blockwise "
+        "image-frequency coefficient perturbation and is not included in spatial flow visualizations."
     )
     p("Run matrix and final values", "Heading2")
     add_table(data["per_run_rows"], per_cols, font_size=5)

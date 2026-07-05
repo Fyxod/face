@@ -96,15 +96,36 @@ REQUIRED_HISTORY_FIELDS = {
     "rolling_grad_norm",
     "rolling_num_at_min",
     "rolling_num_at_max",
-    "dct_mean_disp",
-    "dct_max_disp",
-    "dct_p95_disp",
-    "dct_param_min",
-    "dct_param_max",
-    "dct_param_mean_abs",
-    "dct_grad_norm",
+    "dct_enabled",
+    "dct_gain_min",
+    "dct_gain_max",
+    "dct_gain_mean",
+    "dct_gain_mean_abs",
+    "dct_gain_l2",
+    "dct_gain_grad_norm",
     "dct_num_at_min",
     "dct_num_at_max",
+    "dct_num_clamped",
+    "dct_selected_frequency_count",
+    "dct_frequency_mask_mode",
+    "dct_input_coefficient_energy",
+    "dct_output_coefficient_energy",
+    "dct_coefficient_delta_l1",
+    "dct_coefficient_delta_l2",
+    "dct_relative_energy_change",
+    "dct_spatial_delta_mse",
+    "dct_spatial_delta_l1",
+    "dct_spatial_delta_l2",
+    "dct_spatial_delta_max_abs",
+    "dct_clipped_low_fraction",
+    "dct_clipped_high_fraction",
+    "dct_dc_energy",
+    "dct_low_frequency_energy_before",
+    "dct_low_frequency_energy_after",
+    "dct_mid_frequency_energy_before",
+    "dct_mid_frequency_energy_after",
+    "dct_high_frequency_energy_before",
+    "dct_high_frequency_energy_after",
     "fft_phase_norm",
     "fft_phase_mean_abs",
     "fft_phase_max_abs",
@@ -141,11 +162,59 @@ def _history_fields_ok(row: dict[str, Any]) -> bool:
     return REQUIRED_HISTORY_FIELDS.issubset(set(row))
 
 
-def _component_flow_images(aux: dict[str, Any], out_dir: Path, scale_px: float) -> None:
+def _save_scaled_delta(path: Path, delta, scale: float = 10.0) -> None:
+    import torch
+
+    value = delta.detach().float().abs().mean(1, keepdim=False)[0].mul(float(scale)).clamp(0, 1)
+    array = value.cpu().numpy()
+    Image.fromarray((array * 255.0 + 0.5).astype(np.uint8), mode="L").convert("RGB").save(path)
+
+
+def _save_matrix_heatmap(path: Path, matrix, title: str, vmin: float | None = None, vmax: float | None = None) -> None:
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    arr = matrix.detach().float().cpu().numpy() if hasattr(matrix, "detach") else np.asarray(matrix, dtype=np.float32)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig, ax = plt.subplots(figsize=(4.6, 4.0), dpi=140)
+    im = ax.imshow(arr, cmap="magma", interpolation="nearest", vmin=vmin, vmax=vmax)
+    ax.set_title(title)
+    ax.set_xlabel("DCT v frequency index")
+    ax.set_ylabel("DCT u frequency index")
+    ax.set_xticks(range(arr.shape[1]))
+    ax.set_yticks(range(arr.shape[0]))
+    fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+    fig.tight_layout()
+    fig.savefig(path)
+    plt.close(fig)
+
+
+def _dct_visual_images(aux: dict[str, Any], out_dir: Path, geometry) -> None:
+    if "dct_image" not in aux or "dct_delta" not in aux:
+        return
+    tensor_to_pil(aux["dct_image"]).save(out_dir / "dct_only_perturbed.png")
+    delta_to_pil(aux["dct_delta"]).save(out_dir / "dct_only_difference.png")
+    _save_scaled_delta(out_dir / "dct_only_difference_x10.png", aux["dct_delta"], scale=10.0)
+    dct = geometry.dct_image
+    _save_matrix_heatmap(out_dir / "dct_gain_heatmap.png", dct.gain_heatmap(), "DCT gain |mean over RGB|")
+    _save_matrix_heatmap(out_dir / "dct_frequency_mask.png", dct.frequency_mask_2d, f"DCT frequency mask: {dct.frequency_mask_mode}", vmin=0, vmax=1)
+    before = dct.spectrum_summary(aux["spatial"])
+    after = dct.spectrum_summary(aux["dct_image"])
+    vmax = float(max(before.max().cpu(), after.max().cpu()).item()) if before.numel() and after.numel() else None
+    _save_matrix_heatmap(out_dir / "dct_spectrum_before.png", before, "DCT spectrum before", vmin=0, vmax=vmax)
+    _save_matrix_heatmap(out_dir / "dct_spectrum_after.png", after, "DCT spectrum after", vmin=0, vmax=vmax)
+    _save_matrix_heatmap(out_dir / "dct_spectrum_difference.png", (after - before).abs(), "DCT spectrum |after-before|")
+
+
+def _component_flow_images(aux: dict[str, Any], out_dir: Path, scale_px: float, geometry=None) -> None:
     flow_to_pil(aux["displacement"], scale_px).save(out_dir / "combined_flow.png")
     for name, field in aux["fields"].items():
         flow_to_pil(field, scale_px).save(out_dir / f"{name}_flow.png")
     delta_to_pil(aux["fft_delta"]).save(out_dir / "fft_phase_visualization.png")
+    if geometry is not None:
+        _dct_visual_images(aux, out_dir, geometry)
 
 
 def _save_checkpoint(run_dir: Path, iteration: int, perturbed, aux: dict[str, Any], row: dict[str, Any], geometry) -> None:
@@ -221,7 +290,7 @@ def optimize_one(spec: RunSpec, cfg: RunConfig, arcface, device, output_dir: Pat
             "seed": spec.run_seed,
             "image_path": str(image_path),
         },
-        "experiment_description": "White-box geometric identity optimization against frozen ArcFace iResNet-100, with downstream InstructPix2Pix edit evaluation.",
+        "experiment_description": "White-box ArcFace identity optimization with spatial geometry and image-frequency perturbations, plus downstream InstructPix2Pix evaluation.",
         "objective": "Z = 1 - cosine_similarity(ArcFace(original), ArcFace(perturbed))",
         "loss": "loss = -Z",
         "arcface_objective_prompt_conditioned": False,
@@ -229,7 +298,7 @@ def optimize_one(spec: RunSpec, cfg: RunConfig, arcface, device, output_dir: Pat
         "no_landmarks_alignment_or_detection": True,
         "no_visual_counter_loss": True,
         "model_weights_frozen": True,
-        "optimized_parameters": "geometry_only",
+        "optimized_parameters": "spatial_geometry_plus_dct_image_frequency_parameters",
         "arcface": arcface.metadata(),
         "geometry_config_path": cfg.geometry_config_path,
         "geometry_config_resolved": geometry_config.__dict__.copy(),
@@ -322,6 +391,9 @@ def optimize_one(spec: RunSpec, cfg: RunConfig, arcface, device, output_dir: Pat
                 "theta_state": geometry.theta_state(),
                 "perturbed": perturbed.detach().clone(),
                 "aux": {
+                    "spatial": aux["spatial"].detach().clone(),
+                    "dct_image": aux["dct_image"].detach().clone(),
+                    "dct_delta": aux["dct_delta"].detach().clone(),
                     "displacement": aux["displacement"].detach().clone(),
                     "fields": {k: v.detach().clone() for k, v in aux["fields"].items()},
                     "fft_delta": aux["fft_delta"].detach().clone(),
@@ -341,7 +413,7 @@ def optimize_one(spec: RunSpec, cfg: RunConfig, arcface, device, output_dir: Pat
     best_perturbed = tensor_to_pil(best["perturbed"])
     final_perturbed.save(output_dir / "perturbed_final.png")
     best_perturbed.save(output_dir / "perturbed_best.png")
-    _component_flow_images(final_aux, output_dir, geometry.component_limit_for_flow)
+    _component_flow_images(final_aux, output_dir, geometry.component_limit_for_flow, geometry)
     flow_to_pil(best["aux"]["displacement"], geometry.component_limit_for_flow).save(output_dir / "combined_flow_best.png")
     (output_dir / "combined_flow.png").replace(output_dir / "combined_flow_final.png")
     # Keep a conventional alias for report scripts.
@@ -390,6 +462,7 @@ def optimize_one(spec: RunSpec, cfg: RunConfig, arcface, device, output_dir: Pat
             ("Perturbed Best", best_perturbed),
             ("Abs Difference x8", Image.open(output_dir / "input_difference_best.png")),
             ("Combined Flow", Image.open(output_dir / "combined_flow_best.png")),
+            ("DCT Difference x10", Image.open(output_dir / "dct_only_difference_x10.png")),
             ("Clean Edit", Image.open(output_dir / "original_edited.png")),
             ("Perturbed Edit", Image.open(output_dir / "perturbed_best_edited.png")),
         ],
@@ -448,6 +521,12 @@ def optimize_one(spec: RunSpec, cfg: RunConfig, arcface, device, output_dir: Pat
         "final_combined_max_disp_px": final_row["combined_max_disp_px"],
         "final_combined_mean_disp_px": final_row["combined_mean_disp_px"],
         "final_combined_p95_disp_px": final_row["combined_p95_disp_px"],
+        "final_dct_gain_mean_abs": final_row.get("dct_gain_mean_abs"),
+        "final_dct_relative_energy_change": final_row.get("dct_relative_energy_change"),
+        "final_dct_spatial_delta_mse": final_row.get("dct_spatial_delta_mse"),
+        "final_dct_spatial_delta_l1": final_row.get("dct_spatial_delta_l1"),
+        "final_dct_spatial_delta_max_abs": final_row.get("dct_spatial_delta_max_abs"),
+        "dct_metadata": geometry.dct_image.metadata(),
         "final_fraction_clamped_total": final_row["fraction_clamped_total"],
         "all_required_history_fields_populated": _history_fields_ok(final_row),
         "clamp_project_logic_active": final_row["num_total_params"] > 0,

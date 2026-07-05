@@ -1,24 +1,12 @@
-"""Low-frequency DCT coordinate warp basis."""
+"""Deprecated compatibility wrapper for the legacy DCT coordinate warp.
+
+The active FACE pipeline uses `face.core.geometry.dct_image` for a true
+blockwise image-domain DCT coefficient perturbation. This module is kept
+only so old imports fail less abruptly; it is not imported by the active
+pipeline.
+"""
 from __future__ import annotations
 
-import math
+from .dct_warp_legacy import dct_basis
 
-import torch
-
-
-def dct_basis(size: int, height: int, width: int, device: torch.device) -> torch.Tensor:
-    yy, xx = torch.meshgrid(
-        torch.arange(height, device=device, dtype=torch.float32),
-        torch.arange(width, device=device, dtype=torch.float32),
-        indexing="ij",
-    )
-    basis = []
-    for ky in range(size):
-        for kx in range(size):
-            if ky == 0 and kx == 0:
-                continue
-            value = torch.cos(math.pi * ky * (yy + 0.5) / height) * torch.cos(
-                math.pi * kx * (xx + 0.5) / width
-            )
-            basis.append(value / value.square().mean().sqrt().clamp_min(1e-6))
-    return torch.stack(basis, dim=0)
+__all__ = ["dct_basis"]

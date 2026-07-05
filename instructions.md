@@ -65,7 +65,32 @@ The setup report is written here:
 outputs/smoke/arcface_setup_report.json
 ```
 
-## 2. Identity smoke
+## 2. Standalone image-DCT smoke
+
+Run this before ArcFace. It does not load ArcFace or InstructPix2Pix.
+
+```bash
+cd /home/interns/Desktop/face
+
+$HOME/.local/bin/micromamba run \
+  -p /home/interns/Desktop/mat/.micromamba/envs/mat-a6000 \
+  python -m face.scripts.smoke_dct_image \
+  --image /home/interns/Desktop/mat/data/face_002/instruct_512.png \
+  --output-root outputs/dct_image_smoke \
+  --block-size 8 \
+  --frequency-mask all_ac \
+  --gain-limit 0.5
+```
+
+Expected root:
+
+```text
+outputs/dct_image_smoke/
+```
+
+This checks neutral reconstruction, nonzero image-DCT effect, gradient flow into `dct_gain_raw`, disabled behavior, projection, and DC preservation.
+
+## 3. Identity smoke
 
 Run after checkpoint validation succeeds:
 
@@ -77,13 +102,14 @@ $HOME/.local/bin/micromamba run \
   python -m face.scripts.smoke_identity \
   --mat-root /home/interns/Desktop/mat \
   --arcface-checkpoint /home/interns/Desktop/face/models/arcface/iresnet100.pth \
-  --geometry-config configs/geometry_default.json
+  --geometry-config configs/geometry_default.json \
+  --output-root outputs/smoke_dct_image_pipeline
 ```
 
 Expected root:
 
 ```text
-outputs/smoke/
+outputs/smoke_dct_image_pipeline/
 ```
 
 This checks:
@@ -96,12 +122,15 @@ This checks:
 - `Z = 1 - cosine_similarity` is finite
 - `loss = -Z` is finite
 - gradients reach geometry parameters
+- gradients reach `dct_gain_raw`
 - ArcFace receives no optimizer updates
 - hard projection executes
+- DCT spectrum changes
+- old DCT displacement fields are not reported
 - PSNR and SSIM are logged
 - history/images are saved
 
-## 3. Quick timing smoke
+## 4. Quick timing smoke
 
 ```bash
 cd /home/interns/Desktop/face
@@ -122,7 +151,7 @@ Expected root:
 outputs/smoke_timing/
 ```
 
-## 4. All-case timing smoke
+## 5. All-case timing smoke
 
 ```bash
 cd /home/interns/Desktop/face
@@ -137,7 +166,7 @@ $HOME/.local/bin/micromamba run \
   --geometry-config configs/geometry_default.json
 ```
 
-## 5. Full 150-iteration run
+## 6. Full 150-iteration run
 
 Run only after checkpoint validation and smoke pass:
 
@@ -151,14 +180,14 @@ $HOME/.local/bin/micromamba run \
   --mat-root /home/interns/Desktop/mat \
   --arcface-checkpoint /home/interns/Desktop/face/models/arcface/iresnet100.pth \
   --iters 150 \
-  --output-root outputs/arcface_identity \
+  --output-root outputs/arcface_identity_dct_image \
   --geometry-config configs/geometry_default.json \
-  2>&1 | tee logs/face_arcface_identity_150.log
+  2>&1 | tee logs/face_arcface_identity_dct_image_150.log
 ```
 
 Completed runs are skipped if `DONE.json` exists. Use `--force` only if you intentionally want to overwrite.
 
-## 6. Summarize
+## 7. Summarize
 
 ```bash
 cd /home/interns/Desktop/face
@@ -166,11 +195,11 @@ cd /home/interns/Desktop/face
 $HOME/.local/bin/micromamba run \
   -p /home/interns/Desktop/mat/.micromamba/envs/mat-a6000 \
   python -m face.scripts.summarize_runs \
-  --results-root outputs/arcface_identity \
-  --output-root outputs/reports/arcface_identity
+  --results-root outputs/arcface_identity_dct_image \
+  --output-root outputs/reports/arcface_identity_dct_image
 ```
 
-## 7. Build report with compressed images
+## 8. Build report
 
 ```bash
 cd /home/interns/Desktop/face
@@ -178,15 +207,14 @@ cd /home/interns/Desktop/face
 $HOME/.local/bin/micromamba run \
   -p /home/interns/Desktop/mat/.micromamba/envs/mat-a6000 \
   python -m face.scripts.build_report \
-  --results-root outputs/arcface_identity \
-  --output-root outputs/reports/arcface_identity \
-  --compress-images
+  --results-root outputs/arcface_identity_dct_image \
+  --output-root outputs/reports/arcface_identity_dct_image
 ```
 
 Expected report outputs:
 
 ```text
-outputs/reports/arcface_identity/
+outputs/reports/arcface_identity_dct_image/
   aggregate_summary.csv
   per_run_final_values.csv
   identity_panel_all_runs.csv
@@ -200,7 +228,7 @@ outputs/reports/arcface_identity/
   strips/
 ```
 
-## 8. Push after run
+## 9. Push after run
 
 Do not add checkpoint weights or theta files.
 
@@ -209,7 +237,7 @@ cd /home/interns/Desktop/face
 git status -sb
 
 git add face configs scripts README.md instructions.md requirements.txt pyproject.toml .gitignore
-git add outputs/smoke outputs/smoke_timing outputs/arcface_identity outputs/reports logs/face_arcface_identity_150.log logs.txt
+git add outputs/dct_image_smoke outputs/smoke_dct_image_pipeline outputs/smoke_timing outputs/arcface_identity_dct_image outputs/reports logs/face_arcface_identity_dct_image_150.log logs.txt
 
 git commit -m "Add FACE ArcFace identity results" || true
 git push origin main

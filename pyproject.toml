@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "face"
 version = "0.1.0"
-description = "ArcFace iResNet-100 white-box geometric identity optimization with downstream InstructPix2Pix evaluation."
+description = "ArcFace iResNet-100 white-box spatial and image-frequency identity optimization with downstream InstructPix2Pix evaluation."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

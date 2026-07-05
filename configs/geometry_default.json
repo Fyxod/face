@@ -1,5 +1,5 @@
 {
-  "description": "FACE default geometry controls ported from latest WOOD. Set enabled=false to turn a perturbation off. Use either norm_limit or px_limit for spatial components; px_limit overrides norm_limit when non-null.",
+  "description": "FACE default controls. TPS, Delaunay, and rolling are spatial coordinate perturbations. DCT is an image-domain block-frequency gain perturbation. Set enabled=false to turn a perturbation off.",
   "global": {
     "init": "neutral",
     "init_fraction": 0.05,
@@ -9,7 +9,6 @@
   "sizes": {
     "tps_size": 5,
     "delaunay_size": 5,
-    "dct_size": 4,
     "fft_phase_size": 8
   },
   "components": {
@@ -30,8 +29,11 @@
     },
     "dct": {
       "enabled": true,
-      "norm_limit": 0.008,
-      "px_limit": null
+      "mode": "block_frequency_gain",
+      "block_size": 8,
+      "frequency_mask": "all_ac",
+      "exclude_dc": true,
+      "gain_limit": 0.5
     },
     "fft_phase": {
       "enabled": false,

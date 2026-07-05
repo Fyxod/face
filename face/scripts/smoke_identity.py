@@ -12,7 +12,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mat-root", required=True)
     parser.add_argument("--arcface-checkpoint", required=True)
     parser.add_argument("--geometry-config", default="configs/geometry_default.json")
-    parser.add_argument("--output-root", default="outputs/smoke")
+    parser.add_argument("--output-root", default="outputs/smoke_dct_image_pipeline")
     parser.add_argument("--iters", type=int, default=2)
     parser.add_argument("--lr", type=float, default=0.05)
     parser.add_argument("--init", choices=["neutral", "small_random"], default=None)

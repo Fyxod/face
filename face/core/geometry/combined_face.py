@@ -1,4 +1,4 @@
-"""Joint FACE geometry: TPS + Delaunay + rolling + DCT + FFT phase."""
+"""Joint FACE perturbation: spatial geometry + image DCT + optional FFT phase."""
 from __future__ import annotations
 
 import json
@@ -10,7 +10,7 @@ from typing import Any
 import torch
 import torch.nn.functional as F
 
-from .dct import dct_basis
+from .dct_image import DCTImagePerturbation
 from .delaunay import delaunay_barycentric
 from .fft_phase import FFTPhasePerturbation
 from .rolling import rolling_field
@@ -23,7 +23,9 @@ class FaceGeometryConfig:
     init_fraction: float = 0.05
     tps_size: int = 5
     delaunay_size: int = 5
-    dct_size: int = 4
+    dct_block_size: int = 8
+    dct_frequency_mask: str = "all_ac"
+    dct_exclude_dc: bool = True
     fft_phase_size: int = 8
     edge_falloff_px: float = 16.0
     tps_enabled: bool = True
@@ -34,11 +36,10 @@ class FaceGeometryConfig:
     tps_norm_limit: float = 0.007
     delaunay_norm_limit: float = 0.010
     rolling_norm_limit: float = 0.009
-    dct_norm_limit: float = 0.008
     tps_px_limit: float | None = None
     delaunay_px_limit: float | None = None
     rolling_px_limit: float | None = None
-    dct_px_limit: float | None = None
+    dct_gain_limit: float = 0.5
     fft_phase_limit_rad: float = math.pi
     max_combined_disp_px: float | None = None
 
@@ -86,11 +87,20 @@ def load_face_geometry_config(path: str | Path | None) -> FaceGeometryConfig:
         block = components.get(name, {})
         if "enabled" in block:
             values[f"{prefix}_enabled"] = bool(block["enabled"])
-        if name != "fft_phase":
+        if name not in {"fft_phase", "dct"}:
             if "norm_limit" in block:
                 values[f"{prefix}_norm_limit"] = float(block["norm_limit"])
             if "px_limit" in block:
                 values[f"{prefix}_px_limit"] = None if block["px_limit"] is None else float(block["px_limit"])
+        elif name == "dct":
+            if "block_size" in block:
+                values["dct_block_size"] = int(block["block_size"])
+            if "frequency_mask" in block:
+                values["dct_frequency_mask"] = str(block["frequency_mask"])
+            if "exclude_dc" in block:
+                values["dct_exclude_dc"] = bool(block["exclude_dc"])
+            if "gain_limit" in block:
+                values["dct_gain_limit"] = float(block["gain_limit"])
         elif "phase_limit_rad" in block:
             values["fft_phase_limit_rad"] = float(block["phase_limit_rad"])
     return FaceGeometryConfig(**values)
@@ -137,8 +147,9 @@ def jacobian_diagnostics(field: torch.Tensor) -> dict[str, float]:
 class CombinedFacePerturbation(torch.nn.Module):
     """Combined differentiable FACE perturbation module.
 
-    Four spatial fields are summed and applied with grid_sample. FFT phase is
-    then applied as a differentiable frequency-domain stage.
+    TPS, Delaunay, and rolling shutter are summed as coordinate fields and
+    applied with grid_sample. A true image-domain DCT coefficient perturbation
+    is then applied, followed by optional FFT phase.
     """
 
     def __init__(
@@ -160,12 +171,10 @@ class CombinedFacePerturbation(torch.nn.Module):
             self.config.delaunay_px_limit, self.config.delaunay_norm_limit, height, width
         )
         self.rolling_limit_px = _configured_limit_px(self.config.rolling_px_limit, self.config.rolling_norm_limit, height, width)
-        self.dct_limit_px = _configured_limit_px(self.config.dct_px_limit, self.config.dct_norm_limit, height, width)
         self.component_limit_for_flow = max(
             self.tps_limit_px,
             self.delaunay_limit_px,
             self.rolling_limit_px,
-            self.dct_limit_px,
             1.0,
         )
 
@@ -186,7 +195,6 @@ class CombinedFacePerturbation(torch.nn.Module):
         edge = t * t * (3 - 2 * t)
         self.register_buffer("edge", edge[None, None])
 
-        self.register_buffer("dct_basis", dct_basis(self.config.dct_size, height, width, device))
         self.register_buffer("tps_matrix", tps_basis(self.config.tps_size, height, width, device))
         delaunay_idx, delaunay_weight = delaunay_barycentric(self.config.delaunay_size, height, width, device)
         self.register_buffer("delaunay_idx", delaunay_idx)
@@ -201,8 +209,16 @@ class CombinedFacePerturbation(torch.nn.Module):
         self.delaunay_raw = torch.nn.Parameter(
             init_tensor((1, 2, self.config.delaunay_size, self.config.delaunay_size), self.delaunay_limit_px)
         )
-        self.dct_coeffs = torch.nn.Parameter(init_tensor((2, self.dct_basis.shape[0]), self.dct_limit_px))
         self.roll_params = torch.nn.Parameter(init_tensor((2,), self.rolling_limit_px))
+        self.dct_image = DCTImagePerturbation(
+            channels=channels,
+            block_size=self.config.dct_block_size,
+            gain_limit=self.config.dct_gain_limit,
+            frequency_mask_mode=self.config.dct_frequency_mask,
+            exclude_dc=self.config.dct_exclude_dc,
+            enabled=self.config.dct_enabled,
+            device=device,
+        )
 
         tps_mask = torch.ones_like(self.tps_raw)
         tps_mask[:, :, 0] = 0
@@ -228,7 +244,6 @@ class CombinedFacePerturbation(torch.nn.Module):
         )
         self.tps_raw.requires_grad_(self.config.tps_enabled)
         self.delaunay_raw.requires_grad_(self.config.delaunay_enabled)
-        self.dct_coeffs.requires_grad_(self.config.dct_enabled)
         self.roll_params.requires_grad_(self.config.rolling_enabled)
         self.fft_phase.raw_phase.requires_grad_(self.config.fft_phase_enabled)
         self.project_()
@@ -251,12 +266,6 @@ class CombinedFacePerturbation(torch.nn.Module):
         field = (gathered * self.delaunay_weight[None, None]).sum(-1)
         return field.reshape(1, 2, self.height, self.width)
 
-    def _dct_field(self) -> torch.Tensor:
-        if not self.config.dct_enabled:
-            return self._zero_field()
-        coeffs = self.dct_coeffs.clamp(-self.dct_limit_px, self.dct_limit_px)
-        return torch.einsum("ck,khw->chw", coeffs, self.dct_basis)[None]
-
     def _rolling_field(self) -> torch.Tensor:
         if not self.config.rolling_enabled:
             return self._zero_field()
@@ -268,7 +277,6 @@ class CombinedFacePerturbation(torch.nn.Module):
             "tps": self._tps_field() * self.edge,
             "delaunay": self._delaunay_field() * self.edge,
             "rolling": self._rolling_field() * self.edge,
-            "dct": self._dct_field() * self.edge,
         }
 
     def spatial_warp(self, image: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, dict[str, torch.Tensor]]:
@@ -286,11 +294,15 @@ class CombinedFacePerturbation(torch.nn.Module):
 
     def forward(self, image: torch.Tensor) -> tuple[torch.Tensor, dict[str, Any]]:
         spatial, displacement, fields = self.spatial_warp(image)
+        dct_output = self.dct_image(spatial)
+        dct_image = dct_output.image
+        dct_delta = dct_output.delta
+        dct_stats = dct_output.stats
         if self.config.fft_phase_enabled:
-            perturbed, fft_delta, fft_stats = self.fft_phase(spatial)
+            perturbed, fft_delta, fft_stats = self.fft_phase(dct_image)
         else:
-            perturbed = spatial
-            fft_delta = torch.zeros_like(spatial)
+            perturbed = dct_image
+            fft_delta = torch.zeros_like(dct_image)
             fft_stats = {
                 "fft_phase_norm": 0.0,
                 "fft_phase_mean_abs": 0.0,
@@ -299,9 +311,12 @@ class CombinedFacePerturbation(torch.nn.Module):
                 "fft_spatial_delta_mse": 0.0,
             }
         diagnostics = self.diagnostics(displacement, fields)
+        diagnostics.update(dct_stats)
         diagnostics.update(fft_stats if isinstance(fft_stats, dict) else fft_stats.__dict__)
         return perturbed, {
             "spatial": spatial,
+            "dct_image": dct_image,
+            "dct_delta": dct_delta,
             "displacement": displacement,
             "fields": fields,
             "fft_delta": fft_delta,
@@ -327,7 +342,7 @@ class CombinedFacePerturbation(torch.nn.Module):
             "tps_grad_norm": norm([self.tps_raw]),
             "delaunay_grad_norm": norm([self.delaunay_raw]),
             "rolling_grad_norm": norm([self.roll_params]),
-            "dct_grad_norm": norm([self.dct_coeffs]),
+            "dct_gain_grad_norm": norm([self.dct_image.dct_gain_raw]),
             "fft_phase_grad_norm": norm([self.fft_phase.raw_phase]),
             "total_grad_norm": norm(list(self.parameters())),
         }
@@ -347,7 +362,7 @@ class CombinedFacePerturbation(torch.nn.Module):
         stats.update(self._param_stats(self.tps_raw, self.tps_limit_px, "tps"))
         stats.update(self._param_stats(self.delaunay_raw, self.delaunay_limit_px, "delaunay"))
         stats.update(self._param_stats(self.roll_params, self.rolling_limit_px, "rolling"))
-        stats.update(self._param_stats(self.dct_coeffs, self.dct_limit_px, "dct"))
+        stats.update(self.dct_image.parameter_diagnostics())
         phase = self.fft_phase.raw_phase.detach().float()
         phase_limit = float(self.config.fft_phase_limit_rad)
         stats.update(
@@ -373,7 +388,7 @@ class CombinedFacePerturbation(torch.nn.Module):
         """
 
         return {
-            "format": "FACE_theta_only_v1",
+            "format": "FACE_theta_only_v2_dct_image",
             "height": self.height,
             "width": self.width,
             "channels": self.channels,
@@ -382,10 +397,11 @@ class CombinedFacePerturbation(torch.nn.Module):
             "theta": {
                 "tps_raw": self.tps_raw.detach().cpu().clone(),
                 "delaunay_raw": self.delaunay_raw.detach().cpu().clone(),
-                "dct_coeffs": self.dct_coeffs.detach().cpu().clone(),
+                "dct_gain_raw": self.dct_image.dct_gain_raw.detach().cpu().clone(),
                 "roll_params": self.roll_params.detach().cpu().clone(),
                 "fft_phase_raw_phase": self.fft_phase.raw_phase.detach().cpu().clone(),
             },
+            "dct_metadata": self.dct_image.metadata(),
         }
 
     def project_(self) -> dict[str, Any]:
@@ -394,7 +410,6 @@ class CombinedFacePerturbation(torch.nn.Module):
                 ("tps", self.tps_raw, self.tps_limit_px, self.config.tps_enabled),
                 ("delaunay", self.delaunay_raw, self.delaunay_limit_px, self.config.delaunay_enabled),
                 ("rolling", self.roll_params, self.rolling_limit_px, self.config.rolling_enabled),
-                ("dct", self.dct_coeffs, self.dct_limit_px, self.config.dct_enabled),
             ]
             total_params = 0
             total_clamped = 0
@@ -417,6 +432,16 @@ class CombinedFacePerturbation(torch.nn.Module):
                 total_params += parameter.numel()
                 if at_min or at_max:
                     components.append(name)
+            dct_projection = self.dct_image.project_()
+            if self.config.dct_enabled:
+                dct_params = int(self.dct_image.frequency_mask.sum().item())
+                total_params += dct_params
+                total_clamped += int(dct_projection.get("dct_num_clamped", 0))
+                dct_diag = self.dct_image.parameter_diagnostics()
+                total_at_min += int(dct_diag.get("dct_num_at_min", 0))
+                total_at_max += int(dct_diag.get("dct_num_at_max", 0))
+                if dct_diag.get("dct_num_at_min", 0) or dct_diag.get("dct_num_at_max", 0):
+                    components.append("dct")
             if self.config.fft_phase_enabled:
                 fft_stats = self.fft_phase.project_()
                 phase = self.fft_phase.raw_phase
@@ -440,6 +465,7 @@ class CombinedFacePerturbation(torch.nn.Module):
                 "num_at_min_total": int(total_at_min),
                 "num_at_max_total": int(total_at_max),
                 "components_at_boundary": ",".join(sorted(set(components))),
+                **dct_projection,
                 **fft_stats,
             }
 
@@ -453,11 +479,15 @@ class CombinedFacePerturbation(torch.nn.Module):
             "tps_limit_px": self.tps_limit_px,
             "delaunay_limit_px": self.delaunay_limit_px,
             "rolling_limit_px": self.rolling_limit_px,
-            "dct_limit_px": self.dct_limit_px,
             "tps_norm_limit": self.config.tps_norm_limit,
             "delaunay_norm_limit": self.config.delaunay_norm_limit,
             "rolling_norm_limit": self.config.rolling_norm_limit,
-            "dct_norm_limit": self.config.dct_norm_limit,
+            "dct_mode": "block_frequency_gain",
+            "dct_block_size": self.config.dct_block_size,
+            "dct_gain_limit": self.config.dct_gain_limit,
+            "dct_frequency_mask": self.config.dct_frequency_mask,
+            "dct_selected_frequency_count": self.dct_image.selected_frequency_count,
+            "dct_exclude_dc": self.config.dct_exclude_dc,
             "fft_phase_limit_rad": float(self.config.fft_phase_limit_rad),
             "max_combined_disp_px": self.config.max_combined_disp_px,
         }

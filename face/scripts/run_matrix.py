@@ -11,7 +11,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mat-root", required=True)
     parser.add_argument("--arcface-checkpoint", required=True)
     parser.add_argument("--geometry-config", default="configs/geometry_default.json")
-    parser.add_argument("--output-root", default="outputs/arcface_identity")
+    parser.add_argument("--output-root", default="outputs/arcface_identity_dct_image")
     parser.add_argument("--iters", type=int, default=150)
     parser.add_argument("--lr", type=float, default=0.05)
     parser.add_argument("--init", choices=["neutral", "small_random"], default=None)

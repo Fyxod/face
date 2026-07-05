@@ -1,4 +1,4 @@
-"""Differentiable geometry modules for FACE."""
+"""Differentiable spatial and frequency perturbation modules for FACE."""
 
 from .combined_face import FaceGeometryConfig, CombinedFacePerturbation, load_face_geometry_config
 
