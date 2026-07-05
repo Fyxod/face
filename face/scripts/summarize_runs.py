@@ -282,20 +282,6 @@ def _mean_series_by_iter(runs: list[dict[str, Any]], key: str) -> tuple[list[flo
     return xs, ys
 
 
-def _component_limit_px(run: dict[str, Any], component: str) -> float | None:
-    limits = run.get("config", {}).get("geometry_limits", {})
-    value = limits.get(f"{component}_limit_px")
-    return to_float(value)
-
-
-def _normalized_component_usage(run: dict[str, Any], row: dict[str, Any], component: str) -> float | None:
-    value = to_float(row.get(f"{component}_param_mean_abs"))
-    limit = _component_limit_px(run, component)
-    if value is None or limit is None or limit <= 0:
-        return None
-    return max(0.0, min(1.0, value / limit))
-
-
 def plot_mean_geometry_lines(path: Path, title: str, ylabel: str, runs: list[dict[str, Any]], keys: list[tuple[str, str]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     plt.figure(figsize=(10, 5.2), dpi=125)
@@ -311,44 +297,6 @@ def plot_mean_geometry_lines(path: Path, title: str, ylabel: str, runs: list[dic
     plt.grid(True, alpha=0.25)
     if plotted:
         plt.legend(fontsize=8)
-    plt.tight_layout()
-    plt.savefig(path)
-    plt.close()
-
-
-def plot_component_usage(path: Path, runs: list[dict[str, Any]]) -> None:
-    components = [
-        ("tps", "TPS"),
-        ("delaunay", "Delaunay"),
-        ("rolling", "Rolling"),
-        ("dct", "DCT"),
-    ]
-    path.parent.mkdir(parents=True, exist_ok=True)
-    plt.figure(figsize=(10, 5.2), dpi=125)
-    for component, label in components:
-        values_by_iter: dict[float, list[float]] = defaultdict(list)
-        for run in runs:
-            if not run.get("config", {}).get("geometry_limits", {}).get(f"{component}_enabled", True):
-                continue
-            for row in run["history_rows"]:
-                x = to_float(row.get("iter"))
-                y = _normalized_component_usage(run, row, component)
-                if x is not None and y is not None:
-                    values_by_iter[x].append(y)
-        xs, ys = [], []
-        for x in sorted(values_by_iter):
-            vals = values_by_iter[x]
-            if vals:
-                xs.append(x)
-                ys.append(sum(vals) / len(vals))
-        if xs:
-            plt.plot(xs, ys, linewidth=2.0, label=label)
-    plt.title("Geometry component diagnostics vs iteration")
-    plt.xlabel("iteration")
-    plt.ylabel("fraction of allowed parameter range")
-    plt.ylim(0.0, 1.02)
-    plt.grid(True, alpha=0.25)
-    plt.legend(fontsize=8)
     plt.tight_layout()
     plt.savefig(path)
     plt.close()
@@ -392,7 +340,18 @@ def make_graphs(runs: list[dict[str, Any]], output_root: Path) -> list[dict[str,
         plot_lines(path, title, ylabel, runs, key)
         graphs.append({"title": title, "path": path.relative_to(output_root).as_posix()})
     component_path = graph_dir / "geometry_component_diagnostics_vs_iteration.png"
-    plot_component_usage(component_path, runs)
+    plot_mean_geometry_lines(
+        component_path,
+        "Geometry component diagnostics vs iteration",
+        "raw diagnostic value",
+        runs,
+        [
+            ("tps_mean_disp", "TPS"),
+            ("delaunay_mean_disp", "Delaunay"),
+            ("rolling_mean_disp", "Rolling"),
+            ("dct_mean_disp", "DCT"),
+        ],
+    )
     graphs.append({"title": "Geometry component diagnostics vs iteration", "path": component_path.relative_to(output_root).as_posix()})
     return graphs
 
