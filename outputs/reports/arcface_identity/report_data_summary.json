@@ -10,24 +10,20 @@
       "title": "Loss vs iteration"
     },
     {
-      "path": "graphs/cosine_similarity_vs_iteration.png",
-      "title": "ArcFace cosine similarity vs iteration"
-    },
-    {
-      "path": "graphs/cosine_distance_vs_iteration.png",
-      "title": "ArcFace cosine distance vs iteration"
-    },
-    {
-      "path": "graphs/similarity_score_pct_vs_iteration.png",
-      "title": "Cosine identity similarity score (%) vs iteration"
-    },
-    {
       "path": "graphs/psnr_vs_iteration.png",
       "title": "PSNR to original vs iteration"
     },
     {
       "path": "graphs/ssim_vs_iteration.png",
       "title": "SSIM to original vs iteration"
+    },
+    {
+      "path": "graphs/geometric_perturbation_displacement_vs_iteration.png",
+      "title": "Geometric perturbation displacement vs iteration"
+    },
+    {
+      "path": "graphs/geometry_component_max_displacement_vs_iteration.png",
+      "title": "Geometry component max displacement vs iteration"
     }
   ],
   "html": "report.html",

@@ -265,6 +265,43 @@ def plot_scatter(path: Path, title: str, runs: list[dict[str, Any]], x_key: str,
     plt.close()
 
 
+def _mean_series_by_iter(runs: list[dict[str, Any]], key: str) -> tuple[list[float], list[float]]:
+    values_by_iter: dict[float, list[float]] = defaultdict(list)
+    for run in runs:
+        for row in run["history_rows"]:
+            x = to_float(row.get("iter"))
+            y = to_float(row.get(key))
+            if x is not None and y is not None:
+                values_by_iter[x].append(y)
+    xs, ys = [], []
+    for x in sorted(values_by_iter):
+        vals = values_by_iter[x]
+        if vals:
+            xs.append(x)
+            ys.append(sum(vals) / len(vals))
+    return xs, ys
+
+
+def plot_mean_geometry_lines(path: Path, title: str, ylabel: str, runs: list[dict[str, Any]], keys: list[tuple[str, str]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    plt.figure(figsize=(10, 5.2), dpi=125)
+    plotted = False
+    for key, label in keys:
+        xs, ys = _mean_series_by_iter(runs, key)
+        if xs:
+            plotted = True
+            plt.plot(xs, ys, linewidth=2.0, label=label)
+    plt.title(title)
+    plt.xlabel("iteration")
+    plt.ylabel(ylabel)
+    plt.grid(True, alpha=0.25)
+    if plotted:
+        plt.legend(fontsize=8)
+    plt.tight_layout()
+    plt.savefig(path)
+    plt.close()
+
+
 def plot_components(path: Path, runs: list[dict[str, Any]]) -> None:
     keys = ["tps_max_disp", "delaunay_max_disp", "rolling_max_disp", "dct_max_disp"]
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -295,9 +332,6 @@ def make_graphs(runs: list[dict[str, Any]], output_root: Path) -> list[dict[str,
     specs = [
         ("Z vs iteration", "Z", "Z", "z_vs_iteration.png"),
         ("Loss vs iteration", "loss", "loss", "loss_vs_iteration.png"),
-        ("ArcFace cosine similarity vs iteration", "identity_cosine_similarity_raw", "cosine similarity", "cosine_similarity_vs_iteration.png"),
-        ("ArcFace cosine distance vs iteration", "identity_cosine_distance", "cosine distance", "cosine_distance_vs_iteration.png"),
-        ("Cosine identity similarity score (%) vs iteration", "identity_similarity_score_pct", "score (%)", "similarity_score_pct_vs_iteration.png"),
         ("PSNR to original vs iteration", "psnr_to_original", "PSNR", "psnr_vs_iteration.png"),
         ("SSIM to original vs iteration", "ssim_to_original", "SSIM", "ssim_vs_iteration.png"),
     ]
@@ -305,6 +339,33 @@ def make_graphs(runs: list[dict[str, Any]], output_root: Path) -> list[dict[str,
         path = graph_dir / name
         plot_lines(path, title, ylabel, runs, key)
         graphs.append({"title": title, "path": path.relative_to(output_root).as_posix()})
+    displacement_path = graph_dir / "geometric_perturbation_displacement_vs_iteration.png"
+    plot_mean_geometry_lines(
+        displacement_path,
+        "Geometric perturbation displacement vs iteration",
+        "pixels",
+        runs,
+        [
+            ("combined_mean_disp_px", "combined mean"),
+            ("combined_p95_disp_px", "combined p95"),
+            ("combined_max_disp_px", "combined max"),
+        ],
+    )
+    graphs.append({"title": "Geometric perturbation displacement vs iteration", "path": displacement_path.relative_to(output_root).as_posix()})
+    component_path = graph_dir / "geometry_component_max_displacement_vs_iteration.png"
+    plot_mean_geometry_lines(
+        component_path,
+        "Geometry component max displacement vs iteration",
+        "pixels",
+        runs,
+        [
+            ("tps_max_disp", "TPS"),
+            ("delaunay_max_disp", "Delaunay"),
+            ("rolling_max_disp", "Rolling shutter"),
+            ("dct_max_disp", "DCT"),
+        ],
+    )
+    graphs.append({"title": "Geometry component max displacement vs iteration", "path": component_path.relative_to(output_root).as_posix()})
     return graphs
 
 
@@ -409,11 +470,7 @@ def build_html(data: dict[str, Any]) -> str:
     parts.append("<h2>3. Graphs</h2><div class='graph-grid'>")
     for graph in data["graphs"]:
         parts.append(f"<figure><figcaption>{html.escape(graph['title'])}</figcaption><a href='{html.escape(graph['path'])}'><img src='{html.escape(graph['path'])}'></a></figure>")
-    parts.append("</div><h2>4. Notes</h2><ul>")
-    parts.append(f"<li>Completed runs collected: {len(data['runs'])}.</li>")
-    parts.append(f"<li>Run root: <span class='path'>{html.escape(data['run_root'])}</span></li>")
-    parts.append(f"<li>Missing artifacts recorded: {len(data['missing'])}.</li>")
-    parts.append("</ul></main></body></html>")
+    parts.append("</div></main></body></html>")
     return "\n".join(parts)
 
 
@@ -553,10 +610,6 @@ def make_pdf(data: dict[str, Any], output_root: Path, pdf_path: Path, compress_i
         p(graph["title"], "Heading3")
         add_image(graph["path"], max_w=7.1 * inch, max_h=4.2 * inch)
 
-    p("Notes", "Heading2")
-    p(f"Completed runs collected: {len(data['runs'])}.")
-    p(f"Run root: {data['run_root']}")
-    p(f"Missing artifacts recorded: {len(data['missing'])}.")
     doc.build(story)
 
 

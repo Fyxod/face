@@ -32,18 +32,6 @@ FACE optimizes `Z = 1 - cosine_similarity` with `loss = -Z` against frozen ArcFa
 
 ![Loss vs iteration](graphs/loss_vs_iteration.png)
 
-### ArcFace cosine similarity vs iteration
-
-![ArcFace cosine similarity vs iteration](graphs/cosine_similarity_vs_iteration.png)
-
-### ArcFace cosine distance vs iteration
-
-![ArcFace cosine distance vs iteration](graphs/cosine_distance_vs_iteration.png)
-
-### Cosine identity similarity score (%) vs iteration
-
-![Cosine identity similarity score (%) vs iteration](graphs/similarity_score_pct_vs_iteration.png)
-
 ### PSNR to original vs iteration
 
 ![PSNR to original vs iteration](graphs/psnr_vs_iteration.png)
@@ -51,3 +39,11 @@ FACE optimizes `Z = 1 - cosine_similarity` with `loss = -Z` against frozen ArcFa
 ### SSIM to original vs iteration
 
 ![SSIM to original vs iteration](graphs/ssim_vs_iteration.png)
+
+### Geometric perturbation displacement vs iteration
+
+![Geometric perturbation displacement vs iteration](graphs/geometric_perturbation_displacement_vs_iteration.png)
+
+### Geometry component max displacement vs iteration
+
+![Geometry component max displacement vs iteration](graphs/geometry_component_max_displacement_vs_iteration.png)
