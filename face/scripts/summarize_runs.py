@@ -303,7 +303,7 @@ def plot_mean_geometry_lines(path: Path, title: str, ylabel: str, runs: list[dic
 
 
 def plot_components(path: Path, runs: list[dict[str, Any]]) -> None:
-    keys = ["tps_max_disp", "delaunay_max_disp", "rolling_max_disp", "dct_max_disp"]
+    keys = ["tps_mean_disp", "delaunay_mean_disp", "rolling_mean_disp", "dct_mean_disp"]
     path.parent.mkdir(parents=True, exist_ok=True)
     plt.figure(figsize=(10, 5.2), dpi=125)
     for key in keys:
@@ -316,8 +316,8 @@ def plot_components(path: Path, runs: list[dict[str, Any]]) -> None:
                 ys.append(values[-1])
         if ys:
             plt.plot(xs, ys, marker="o", linewidth=1.8, label=key)
-    plt.title("Final component max displacement by run")
-    plt.ylabel("pixels")
+    plt.title("Final component diagnostics by run")
+    plt.ylabel("raw diagnostic value")
     plt.xticks(rotation=25, ha="right")
     plt.grid(True, axis="y", alpha=0.25)
     plt.legend(fontsize=8)
@@ -339,20 +339,20 @@ def make_graphs(runs: list[dict[str, Any]], output_root: Path) -> list[dict[str,
         path = graph_dir / name
         plot_lines(path, title, ylabel, runs, key)
         graphs.append({"title": title, "path": path.relative_to(output_root).as_posix()})
-    component_path = graph_dir / "geometry_component_max_displacement_vs_iteration.png"
+    component_path = graph_dir / "geometry_component_diagnostics_vs_iteration.png"
     plot_mean_geometry_lines(
         component_path,
-        "Geometry component max displacement vs iteration",
-        "pixels",
+        "Geometry component diagnostics vs iteration",
+        "raw diagnostic value",
         runs,
         [
-            ("tps_max_disp", "TPS"),
-            ("delaunay_max_disp", "Delaunay"),
-            ("rolling_max_disp", "Rolling shutter"),
-            ("dct_max_disp", "DCT"),
+            ("tps_mean_disp", "TPS"),
+            ("delaunay_mean_disp", "Delaunay"),
+            ("rolling_mean_disp", "Rolling"),
+            ("dct_mean_disp", "DCT"),
         ],
     )
-    graphs.append({"title": "Geometry component max displacement vs iteration", "path": component_path.relative_to(output_root).as_posix()})
+    graphs.append({"title": "Geometry component diagnostics vs iteration", "path": component_path.relative_to(output_root).as_posix()})
     return graphs
 
 

@@ -40,6 +40,6 @@ FACE optimizes `Z = 1 - cosine_similarity` with `loss = -Z` against frozen ArcFa
 
 ![SSIM to original vs iteration](graphs/ssim_vs_iteration.png)
 
-### Geometry component max displacement vs iteration
+### Geometry component diagnostics vs iteration
 
-![Geometry component max displacement vs iteration](graphs/geometry_component_max_displacement_vs_iteration.png)
+![Geometry component diagnostics vs iteration](graphs/geometry_component_diagnostics_vs_iteration.png)

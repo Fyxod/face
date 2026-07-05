@@ -18,8 +18,8 @@
       "title": "SSIM to original vs iteration"
     },
     {
-      "path": "graphs/geometry_component_max_displacement_vs_iteration.png",
-      "title": "Geometry component max displacement vs iteration"
+      "path": "graphs/geometry_component_diagnostics_vs_iteration.png",
+      "title": "Geometry component diagnostics vs iteration"
     }
   ],
   "html": "report.html",
