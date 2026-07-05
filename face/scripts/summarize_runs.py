@@ -339,19 +339,6 @@ def make_graphs(runs: list[dict[str, Any]], output_root: Path) -> list[dict[str,
         path = graph_dir / name
         plot_lines(path, title, ylabel, runs, key)
         graphs.append({"title": title, "path": path.relative_to(output_root).as_posix()})
-    displacement_path = graph_dir / "geometric_perturbation_displacement_vs_iteration.png"
-    plot_mean_geometry_lines(
-        displacement_path,
-        "Geometric perturbation displacement vs iteration",
-        "pixels",
-        runs,
-        [
-            ("combined_mean_disp_px", "combined mean"),
-            ("combined_p95_disp_px", "combined p95"),
-            ("combined_max_disp_px", "combined max"),
-        ],
-    )
-    graphs.append({"title": "Geometric perturbation displacement vs iteration", "path": displacement_path.relative_to(output_root).as_posix()})
     component_path = graph_dir / "geometry_component_max_displacement_vs_iteration.png"
     plot_mean_geometry_lines(
         component_path,

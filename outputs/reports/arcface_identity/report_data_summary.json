@@ -1,5 +1,5 @@
 {
-  "compress_images": true,
+  "compress_images": false,
   "graphs": [
     {
       "path": "graphs/z_vs_iteration.png",
@@ -16,10 +16,6 @@
     {
       "path": "graphs/ssim_vs_iteration.png",
       "title": "SSIM to original vs iteration"
-    },
-    {
-      "path": "graphs/geometric_perturbation_displacement_vs_iteration.png",
-      "title": "Geometric perturbation displacement vs iteration"
     },
     {
       "path": "graphs/geometry_component_max_displacement_vs_iteration.png",
