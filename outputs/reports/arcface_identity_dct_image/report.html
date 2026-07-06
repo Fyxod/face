@@ -18,7 +18,7 @@
     .path { font-family:Consolas, monospace; font-size:12px; word-break:break-all; }
     
 </style></head><body><main>
-<h1>FACE: ArcFace White-box Spatial + Frequency Identity Optimization</h1><p class='subtitle'>Frozen iResNet-100 identity-distance results with image-DCT perturbation and downstream InstructPix2Pix evaluation</p><p class='small'>Author: Parth Katiyar</p>
+<h1>FACE: ArcFace White-box Geometric Identity Optimization</h1><p class='subtitle'>Frozen iResNet-100 identity-distance results with downstream InstructPix2Pix evaluation</p><p class='small'>Author: Parth Katiyar</p>
 <div class='card'><p>FACE optimizes <code>Z = 1 - cosine_similarity</code> between original and perturbed full-image ArcFace iResNet-100 embeddings. The loss is exactly <code>loss = -Z</code>. ArcFace weights are frozen; only perturbation parameters are optimized. TPS, Delaunay, and rolling are coordinate perturbations. DCT is a blockwise image-frequency coefficient perturbation, not a flow field.</p></div>
 <h2>1. Run matrix</h2><p>Four prompt-labeled cases are retained for compatibility. The ArcFace objective is not prompt-conditioned; prompts are used only for downstream InstructPix2Pix edit evaluation.</p>
 <div class='table-wrap'><table><thead><tr>
@@ -108,9 +108,4 @@
 <figure><figcaption>PSNR to original vs iteration</figcaption><a href='graphs/psnr_vs_iteration.png'><img src='graphs/psnr_vs_iteration.png'></a></figure>
 <figure><figcaption>SSIM to original vs iteration</figcaption><a href='graphs/ssim_vs_iteration.png'><img src='graphs/ssim_vs_iteration.png'></a></figure>
 <figure><figcaption>Geometry component diagnostics vs iteration</figcaption><a href='graphs/geometry_component_diagnostics_vs_iteration.png'><img src='graphs/geometry_component_diagnostics_vs_iteration.png'></a></figure>
-<figure><figcaption>DCT gain mean-absolute value vs iteration</figcaption><a href='graphs/dct_gain_mean_abs_vs_iteration.png'><img src='graphs/dct_gain_mean_abs_vs_iteration.png'></a></figure>
-<figure><figcaption>DCT coefficient-energy change vs iteration</figcaption><a href='graphs/dct_relative_energy_change_vs_iteration.png'><img src='graphs/dct_relative_energy_change_vs_iteration.png'></a></figure>
-<figure><figcaption>DCT spatial-delta MSE vs iteration</figcaption><a href='graphs/dct_spatial_delta_mse_vs_iteration.png'><img src='graphs/dct_spatial_delta_mse_vs_iteration.png'></a></figure>
-<figure><figcaption>DCT low/mid/high frequency energy vs iteration</figcaption><a href='graphs/dct_frequency_band_energy_vs_iteration.png'><img src='graphs/dct_frequency_band_energy_vs_iteration.png'></a></figure>
-<figure><figcaption>Final Z vs DCT coefficient-energy change</figcaption><a href='graphs/z_vs_dct_relative_energy_change.png'><img src='graphs/z_vs_dct_relative_energy_change.png'></a></figure>
 </div></main></body></html>

@@ -18,8 +18,8 @@ import matplotlib.pyplot as plt
 from PIL import Image, ImageChops, ImageEnhance, ImageOps
 
 
-TITLE = "FACE: ArcFace White-box Spatial + Frequency Identity Optimization"
-SUBTITLE = "Frozen iResNet-100 identity-distance results with image-DCT perturbation and downstream InstructPix2Pix evaluation"
+TITLE = "FACE: ArcFace White-box Geometric Identity Optimization"
+SUBTITLE = "Frozen iResNet-100 identity-distance results with downstream InstructPix2Pix evaluation"
 AUTHOR = "Parth Katiyar"
 
 
@@ -591,7 +591,7 @@ def make_pdf(data: dict[str, Any], output_root: Path, pdf_path: Path, compress_i
     )
     p(
         "TPS, Delaunay, and rolling are coordinate perturbations. DCT is a blockwise "
-        "image-frequency coefficient perturbation and is not included in spatial flow visualizations."
+        "image-frequency coefficient perturbation"
     )
     p("Run matrix and final values", "Heading2")
     add_table(data["per_run_rows"], per_cols, font_size=5)

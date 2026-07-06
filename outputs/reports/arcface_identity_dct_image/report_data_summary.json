@@ -20,26 +20,6 @@
     {
       "path": "graphs/geometry_component_diagnostics_vs_iteration.png",
       "title": "Geometry component diagnostics vs iteration"
-    },
-    {
-      "path": "graphs/dct_gain_mean_abs_vs_iteration.png",
-      "title": "DCT gain mean-absolute value vs iteration"
-    },
-    {
-      "path": "graphs/dct_relative_energy_change_vs_iteration.png",
-      "title": "DCT coefficient-energy change vs iteration"
-    },
-    {
-      "path": "graphs/dct_spatial_delta_mse_vs_iteration.png",
-      "title": "DCT spatial-delta MSE vs iteration"
-    },
-    {
-      "path": "graphs/dct_frequency_band_energy_vs_iteration.png",
-      "title": "DCT low/mid/high frequency energy vs iteration"
-    },
-    {
-      "path": "graphs/z_vs_dct_relative_energy_change.png",
-      "title": "Final Z vs DCT coefficient-energy change"
     }
   ],
   "html": "report.html",
