@@ -1,0 +1,116 @@
+<!doctype html><html><head><meta charset='utf-8'><title>FACE report</title><style>
+
+    body { margin:0; font-family: Inter, "Segoe UI", Arial, sans-serif; color:#17202a; background:white; }
+    main { max-width:1180px; margin:0 auto; padding:34px 28px 70px; }
+    h1 { font-size:34px; margin:0 0 6px; }
+    h2 { margin-top:48px; padding-top:18px; border-top:2px solid #d7dde5; }
+    h3 { margin-top:30px; }
+    .subtitle,.small { color:#5d6d7e; }
+    .card { border:1px solid #d7dde5; border-radius:12px; padding:18px; margin:20px 0; background:white; }
+    table { border-collapse:collapse; width:100%; font-size:13px; margin:12px 0 22px; }
+    th,td { border:1px solid #d7dde5; padding:7px 9px; vertical-align:top; }
+    th { background:#f6f8fb; text-align:left; }
+    .strip { width:100%; border:1px solid #d7dde5; border-radius:10px; display:block; }
+    .graph-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(430px,1fr)); gap:18px; }
+    figure { border:1px solid #d7dde5; border-radius:10px; padding:12px; margin:0; }
+    figure img { width:100%; display:block; }
+    figcaption { font-weight:650; margin-bottom:10px; }
+    .path { font-family:Consolas, monospace; font-size:12px; word-break:break-all; }
+    
+</style></head><body><main>
+<h1>FACE: ArcFace White-box Spatial + Frequency Identity Optimization</h1><p class='subtitle'>Frozen iResNet-100 identity-distance results with image-DCT perturbation and downstream InstructPix2Pix evaluation</p><p class='small'>Author: Parth Katiyar</p>
+<div class='card'><p>FACE optimizes <code>Z = 1 - cosine_similarity</code> between original and perturbed full-image ArcFace iResNet-100 embeddings. The loss is exactly <code>loss = -Z</code>. ArcFace weights are frozen; only perturbation parameters are optimized. TPS, Delaunay, and rolling are coordinate perturbations. DCT is a blockwise image-frequency coefficient perturbation, not a flow field.</p></div>
+<h2>1. Run matrix</h2><p>Four prompt-labeled cases are retained for compatibility. The ArcFace objective is not prompt-conditioned; prompts are used only for downstream InstructPix2Pix edit evaluation.</p>
+<div class='table-wrap'><table><thead><tr>
+<th>face</th>
+<th>prompt</th>
+<th>final Z</th>
+<th>best Z</th>
+<th>ArcFace cosine sim</th>
+<th>cosine score %</th>
+<th>SSIM</th>
+<th>PSNR</th>
+<th>edit output SSIM</th>
+<th>max disp px</th>
+<th>DCT gain mean abs</th>
+<th>DCT energy change</th>
+<th>fraction clamped</th>
+</tr></thead><tbody>
+<tr>
+<td>face_002</td>
+<td>add black sunglasses</td>
+<td>0.0608</td>
+<td>0.0608</td>
+<td>0.9392</td>
+<td>93.923</td>
+<td>0.9799</td>
+<td>25.801</td>
+<td>0.6993</td>
+<td>4.7405</td>
+<td>0.4714</td>
+<td>-0.0010</td>
+<td>0.5636</td>
+</tr>
+<tr>
+<td>face_002</td>
+<td>add headphones</td>
+<td>0.0611</td>
+<td>0.0611</td>
+<td>0.9389</td>
+<td>93.891</td>
+<td>0.9791</td>
+<td>25.643</td>
+<td>0.6672</td>
+<td>4.9075</td>
+<td>0.4763</td>
+<td>-0.0009</td>
+<td>0.5636</td>
+</tr>
+<tr>
+<td>face_005</td>
+<td>add black sunglasses</td>
+<td>0.0822</td>
+<td>0.0821</td>
+<td>0.9178</td>
+<td>91.785</td>
+<td>0.9801</td>
+<td>25.796</td>
+<td>0.7645</td>
+<td>8.3567</td>
+<td>0.4823</td>
+<td>0.0012</td>
+<td>0.5876</td>
+</tr>
+<tr>
+<td>face_005</td>
+<td>add headphones</td>
+<td>0.0831</td>
+<td>0.0831</td>
+<td>0.9169</td>
+<td>91.687</td>
+<td>0.9778</td>
+<td>25.313</td>
+<td>0.7091</td>
+<td>7.9864</td>
+<td>0.4800</td>
+<td>0.0012</td>
+<td>0.5945</td>
+</tr>
+</tbody></table></div>
+<h2>2. Case image strips</h2>
+<div class='card'><h3>face_002 — add black sunglasses</h3><img class='strip' src='strips/face_face_002_add_black_sunglasses.png' alt='strip'><p class='path'>outputs/arcface_identity_dct_image/20260706_104719_arcface_identity_all_sequential/runs/arcface_identity/arcface_iresnet100/face_002__add_black_sunglasses</p></div>
+<div class='card'><h3>face_002 — add headphones</h3><img class='strip' src='strips/face_face_002_add_headphones.png' alt='strip'><p class='path'>outputs/arcface_identity_dct_image/20260706_104719_arcface_identity_all_sequential/runs/arcface_identity/arcface_iresnet100/face_002__add_headphones</p></div>
+<div class='card'><h3>face_005 — add black sunglasses</h3><img class='strip' src='strips/face_face_005_add_black_sunglasses.png' alt='strip'><p class='path'>outputs/arcface_identity_dct_image/20260706_104719_arcface_identity_all_sequential/runs/arcface_identity/arcface_iresnet100/face_005__add_black_sunglasses</p></div>
+<div class='card'><h3>face_005 — add headphones</h3><img class='strip' src='strips/face_face_005_add_headphones.png' alt='strip'><p class='path'>outputs/arcface_identity_dct_image/20260706_104719_arcface_identity_all_sequential/runs/arcface_identity/arcface_iresnet100/face_005__add_headphones</p></div>
+<h2>3. Graphs</h2><div class='graph-grid'>
+<figure><figcaption>Z vs iteration</figcaption><a href='graphs/z_vs_iteration.png'><img src='graphs/z_vs_iteration.png'></a></figure>
+<figure><figcaption>Loss vs iteration</figcaption><a href='graphs/loss_vs_iteration.png'><img src='graphs/loss_vs_iteration.png'></a></figure>
+<figure><figcaption>PSNR to original vs iteration</figcaption><a href='graphs/psnr_vs_iteration.png'><img src='graphs/psnr_vs_iteration.png'></a></figure>
+<figure><figcaption>SSIM to original vs iteration</figcaption><a href='graphs/ssim_vs_iteration.png'><img src='graphs/ssim_vs_iteration.png'></a></figure>
+<figure><figcaption>Geometry component diagnostics vs iteration</figcaption><a href='graphs/geometry_component_diagnostics_vs_iteration.png'><img src='graphs/geometry_component_diagnostics_vs_iteration.png'></a></figure>
+<figure><figcaption>DCT gain mean-absolute value vs iteration</figcaption><a href='graphs/dct_gain_mean_abs_vs_iteration.png'><img src='graphs/dct_gain_mean_abs_vs_iteration.png'></a></figure>
+<figure><figcaption>DCT coefficient-energy change vs iteration</figcaption><a href='graphs/dct_relative_energy_change_vs_iteration.png'><img src='graphs/dct_relative_energy_change_vs_iteration.png'></a></figure>
+<figure><figcaption>DCT spatial-delta MSE vs iteration</figcaption><a href='graphs/dct_spatial_delta_mse_vs_iteration.png'><img src='graphs/dct_spatial_delta_mse_vs_iteration.png'></a></figure>
+<figure><figcaption>DCT low/mid/high frequency energy vs iteration</figcaption><a href='graphs/dct_frequency_band_energy_vs_iteration.png'><img src='graphs/dct_frequency_band_energy_vs_iteration.png'></a></figure>
+<figure><figcaption>Final Z vs DCT coefficient-energy change</figcaption><a href='graphs/z_vs_dct_relative_energy_change.png'><img src='graphs/z_vs_dct_relative_energy_change.png'></a></figure>
+</div></main></body></html>

@@ -1,0 +1,200 @@
+[
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "ArcFace",
+    "pair": "original_vs_perturbed_best_input",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "Facenet512",
+    "pair": "original_vs_perturbed_best_input",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "SFace",
+    "pair": "original_vs_perturbed_best_input",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "ArcFace",
+    "pair": "original_vs_perturbed_final_input",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "Facenet512",
+    "pair": "original_vs_perturbed_final_input",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "SFace",
+    "pair": "original_vs_perturbed_final_input",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "ArcFace",
+    "pair": "clean_edit_vs_perturbed_best_edit",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "Facenet512",
+    "pair": "clean_edit_vs_perturbed_best_edit",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "SFace",
+    "pair": "clean_edit_vs_perturbed_best_edit",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "ArcFace",
+    "pair": "clean_edit_vs_perturbed_final_edit",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "Facenet512",
+    "pair": "clean_edit_vs_perturbed_final_edit",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "SFace",
+    "pair": "clean_edit_vs_perturbed_final_edit",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "ArcFace",
+    "pair": "original_input_vs_clean_edit",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "Facenet512",
+    "pair": "original_input_vs_clean_edit",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "SFace",
+    "pair": "original_input_vs_clean_edit",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "ArcFace",
+    "pair": "perturbed_best_input_vs_perturbed_best_edit",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "Facenet512",
+    "pair": "perturbed_best_input_vs_perturbed_best_edit",
+    "threshold": null,
+    "verified": null
+  },
+  {
+    "confidence": null,
+    "detector_backend": "skip",
+    "distance": null,
+    "distance_metric": "cosine",
+    "error": "DeepFace import failed: ValueError('You have tensorflow 2.21.0 and this requires tf-keras package. Please run `pip install tf-keras` or downgrade your tensorflow.')",
+    "model_name": "SFace",
+    "pair": "perturbed_best_input_vs_perturbed_best_edit",
+    "threshold": null,
+    "verified": null
+  }
+]

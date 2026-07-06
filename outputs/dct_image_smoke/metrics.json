@@ -1,0 +1,115 @@
+{
+  "band_examples": {
+    "all_ac": {
+      "coefficient_energy_after": 0.34549403190612793,
+      "coefficient_energy_before": 0.3422659933567047,
+      "fraction_pixels_clipped": 0.009353637346066535,
+      "label": "all_ac_gain_100pct",
+      "max_abs_image_change": 0.2700674533843994,
+      "mse": 0.0006119035533629358,
+      "psnr": 32.13317024820291,
+      "relative_coefficient_energy_change": 0.00943137425929308,
+      "ssim": 0.9954462647438049
+    },
+    "high": {
+      "coefficient_energy_after": 0.3423269987106323,
+      "coefficient_energy_before": 0.3422659933567047,
+      "fraction_pixels_clipped": 0.0009854634799921769,
+      "label": "high_gain_100pct",
+      "max_abs_image_change": 0.06101393699645996,
+      "mse": 1.2181947568024043e-05,
+      "psnr": 49.1428327406517,
+      "relative_coefficient_energy_change": 0.0001782395993359387,
+      "ssim": 0.9999074339866638
+    },
+    "low": {
+      "coefficient_energy_after": 0.34508320689201355,
+      "coefficient_energy_before": 0.3422659933567047,
+      "fraction_pixels_clipped": 0.008288065786473453,
+      "label": "low_gain_100pct",
+      "max_abs_image_change": 0.32107436656951904,
+      "mse": 0.000532772159203887,
+      "psnr": 32.73458477944432,
+      "relative_coefficient_energy_change": 0.008231064304709435,
+      "ssim": 0.9960235357284546
+    },
+    "mid": {
+      "coefficient_energy_after": 0.3426159918308258,
+      "coefficient_energy_before": 0.3422659933567047,
+      "fraction_pixels_clipped": 0.0016365051669708919,
+      "label": "mid_gain_100pct",
+      "max_abs_image_change": 0.15518033504486084,
+      "mse": 6.962366751395166e-05,
+      "psnr": 41.57243103442998,
+      "relative_coefficient_energy_change": 0.0010225920705124736,
+      "ssim": 0.9994717240333557
+    }
+  },
+  "block_size": 8,
+  "dc_gain_abs_max_after_projection": 0.0,
+  "disabled_reconstruction_max_abs": 0.0,
+  "frequency_mask_requested": "all_ac",
+  "gain_limit": 0.5,
+  "gradient_reaches_dct_gain_raw": true,
+  "image": "/home/interns/Desktop/mat/data/face_002/instruct_512.png",
+  "neutral_reconstruction_max_abs": 1.3709068298339844e-06,
+  "primary_examples": [
+    {
+      "coefficient_energy_after": 0.3422659933567047,
+      "coefficient_energy_before": 0.3422659933567047,
+      "fraction_pixels_clipped": 0.0008366902475245297,
+      "label": "neutral_reconstruction",
+      "max_abs_image_change": 1.3709068298339844e-06,
+      "mse": 5.964141263107778e-14,
+      "psnr": 100.0,
+      "relative_coefficient_energy_change": 0.0,
+      "ssim": 1.0
+    },
+    {
+      "coefficient_energy_after": 0.34295204281806946,
+      "coefficient_energy_before": 0.3422659933567047,
+      "fraction_pixels_clipped": 0.0027910869102925062,
+      "label": "positive_gain_25pct",
+      "max_abs_image_change": 0.08132685720920563,
+      "mse": 3.967010343330912e-05,
+      "psnr": 44.01536667172514,
+      "relative_coefficient_energy_change": 0.0020044336561113596,
+      "ssim": 0.9996997117996216
+    },
+    {
+      "coefficient_energy_after": 0.34371861815452576,
+      "coefficient_energy_before": 0.3422659933567047,
+      "fraction_pixels_clipped": 0.004611968848621473,
+      "label": "positive_gain_50pct",
+      "max_abs_image_change": 0.16265341639518738,
+      "mse": 0.0001568896259414032,
+      "psnr": 38.04405772444651,
+      "relative_coefficient_energy_change": 0.004244139883667231,
+      "ssim": 0.9988186359405518
+    },
+    {
+      "coefficient_energy_after": 0.34549403190612793,
+      "coefficient_energy_before": 0.3422659933567047,
+      "fraction_pixels_clipped": 0.009353637346066535,
+      "label": "positive_gain_100pct",
+      "max_abs_image_change": 0.2700674533843994,
+      "mse": 0.0006119035533629358,
+      "psnr": 32.13317024820291,
+      "relative_coefficient_energy_change": 0.00943137425929308,
+      "ssim": 0.9954462647438049
+    },
+    {
+      "coefficient_energy_after": 0.3416018486022949,
+      "coefficient_energy_before": 0.3422659933567047,
+      "fraction_pixels_clipped": 0.001132965051510837,
+      "label": "mixed_positive_negative",
+      "max_abs_image_change": 0.24397945404052734,
+      "mse": 0.0003626806428655982,
+      "psnr": 34.404756231375,
+      "relative_coefficient_energy_change": -0.0019404345657676458,
+      "ssim": 0.9972262382507324
+    }
+  ],
+  "projected_max_gain": 0.5,
+  "projection_num_clamped": 189
+}

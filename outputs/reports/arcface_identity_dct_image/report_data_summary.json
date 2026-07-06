@@ -1,0 +1,51 @@
+{
+  "compress_images": false,
+  "graphs": [
+    {
+      "path": "graphs/z_vs_iteration.png",
+      "title": "Z vs iteration"
+    },
+    {
+      "path": "graphs/loss_vs_iteration.png",
+      "title": "Loss vs iteration"
+    },
+    {
+      "path": "graphs/psnr_vs_iteration.png",
+      "title": "PSNR to original vs iteration"
+    },
+    {
+      "path": "graphs/ssim_vs_iteration.png",
+      "title": "SSIM to original vs iteration"
+    },
+    {
+      "path": "graphs/geometry_component_diagnostics_vs_iteration.png",
+      "title": "Geometry component diagnostics vs iteration"
+    },
+    {
+      "path": "graphs/dct_gain_mean_abs_vs_iteration.png",
+      "title": "DCT gain mean-absolute value vs iteration"
+    },
+    {
+      "path": "graphs/dct_relative_energy_change_vs_iteration.png",
+      "title": "DCT coefficient-energy change vs iteration"
+    },
+    {
+      "path": "graphs/dct_spatial_delta_mse_vs_iteration.png",
+      "title": "DCT spatial-delta MSE vs iteration"
+    },
+    {
+      "path": "graphs/dct_frequency_band_energy_vs_iteration.png",
+      "title": "DCT low/mid/high frequency energy vs iteration"
+    },
+    {
+      "path": "graphs/z_vs_dct_relative_energy_change.png",
+      "title": "Final Z vs DCT coefficient-energy change"
+    }
+  ],
+  "html": "report.html",
+  "markdown": "report.md",
+  "num_missing": 0,
+  "num_runs": 4,
+  "pdf": "report.pdf",
+  "run_root": "outputs/arcface_identity_dct_image/20260706_104719_arcface_identity_all_sequential"
+}
