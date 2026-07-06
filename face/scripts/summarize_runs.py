@@ -134,16 +134,13 @@ def collect_runs(run_root: Path) -> tuple[list[dict[str, Any]], list[dict[str, s
             "perturbed_best": run_dir / "perturbed_best.png",
             "input_difference": run_dir / "input_difference_best.png",
             "combined_flow": run_dir / "combined_flow_best.png",
-            "dct_difference": run_dir / "dct_only_difference_x10.png",
             "clean_edit": run_dir / "original_edited.png",
             "perturbed_edit": run_dir / "perturbed_best_edited.png",
             "comparison_sheet": run_dir / "comparison_sheet.png",
         }
-        optional = {"dct_difference"}
         for label, path in images.items():
             if not path.exists():
-                if label not in optional:
-                    missing.append({"case": f"{face_id} / {prompt}", "artifact": label, "path": str(path)})
+                missing.append({"case": f"{face_id} / {prompt}", "artifact": label, "path": str(path)})
         runs.append(
             {
                 "face_id": face_id,
@@ -195,7 +192,6 @@ def make_strip(run: dict[str, Any], output_root: Path, compress: bool) -> str:
         ("Original", run["images"]["original"]),
         ("Perturbed Best", run["images"]["perturbed_best"]),
         ("Abs Difference x8", run["images"]["input_difference"]),
-        ("DCT Difference x10", run["images"]["dct_difference"]),
         ("Clean Edit", run["images"]["clean_edit"]),
         ("Original Edit - Original", original_edit_diff),
         ("Perturbed Edit", run["images"]["perturbed_edit"]),
@@ -357,37 +353,10 @@ def make_graphs(runs: list[dict[str, Any]], output_root: Path) -> list[dict[str,
             ("tps_mean_disp", "TPS"),
             ("delaunay_mean_disp", "Delaunay"),
             ("rolling_mean_disp", "Rolling"),
+            ("dct_gain_mean_abs", "DCT gain"),
         ],
     )
     graphs.append({"title": "Geometry component diagnostics vs iteration", "path": component_path.relative_to(output_root).as_posix()})
-    dct_specs = [
-        ("DCT gain mean-absolute value vs iteration", "dct_gain_mean_abs", "mean abs gain", "dct_gain_mean_abs_vs_iteration.png"),
-        ("DCT coefficient-energy change vs iteration", "dct_relative_energy_change", "relative energy change", "dct_relative_energy_change_vs_iteration.png"),
-        ("DCT spatial-delta MSE vs iteration", "dct_spatial_delta_mse", "MSE", "dct_spatial_delta_mse_vs_iteration.png"),
-    ]
-    for title, key, ylabel, name in dct_specs:
-        if any_history_key(runs, key):
-            path = graph_dir / name
-            plot_lines(path, title, ylabel, runs, key)
-            graphs.append({"title": title, "path": path.relative_to(output_root).as_posix()})
-    if any_history_key(runs, "dct_low_frequency_energy_after"):
-        path = graph_dir / "dct_frequency_band_energy_vs_iteration.png"
-        plot_mean_geometry_lines(
-            path,
-            "DCT low/mid/high frequency energy vs iteration",
-            "mean coefficient energy after",
-            runs,
-            [
-                ("dct_low_frequency_energy_after", "low"),
-                ("dct_mid_frequency_energy_after", "mid"),
-                ("dct_high_frequency_energy_after", "high"),
-            ],
-        )
-        graphs.append({"title": "DCT low/mid/high frequency energy vs iteration", "path": path.relative_to(output_root).as_posix()})
-    if any(to_float(run["summary"].get("final_dct_relative_energy_change")) is not None for run in runs):
-        path = graph_dir / "z_vs_dct_relative_energy_change.png"
-        plot_scatter(path, "Final Z vs DCT coefficient-energy change", runs, "final_dct_relative_energy_change", "final_Z", "DCT relative energy change", "final Z")
-        graphs.append({"title": "Final Z vs DCT coefficient-energy change", "path": path.relative_to(output_root).as_posix()})
     return graphs
 
 
